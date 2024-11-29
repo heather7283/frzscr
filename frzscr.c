@@ -47,7 +47,7 @@ void parse_command_line(int *argc, char ***argv) {
     while ((opt = getopt(*argc, *argv, ":o:ch")) != -1) {
         switch (opt) {
         case 'o':
-            info("output name supplied on command line: %s\n", optarg);
+            debug("output name supplied on command line: %s\n", optarg);
             warn("output option not implemented!\n");
             config.output = strdup(optarg);
             break;
@@ -94,18 +94,18 @@ int main(int argc, char **argv) {
 
     parse_command_line(&argc, &argv);
 
-    info("parents args (argc = %d):\n", argc);
+    debug("parent args (argc = %d):\n", argc);
     for (int i = 0; i < argc; i++) {
-        info("argv[%d]: %s\n", i, argv[i]);
+        debug("argv[%d]: %s\n", i, argv[i]);
     }
 
     if (config.fork_child == 'Y') {
         if (child_argc < 1) {
             die("empty child command\n");
         }
-        info("child args (argc = %d):\n", child_argc);
+        debug("child args (argc = %d):\n", child_argc);
         for (int i = 0; i < child_argc; i++) {
-            info("argv[%d]: %s\n", i, child_argv[i]);
+            debug("argv[%d]: %s\n", i, child_argv[i]);
         }
     }
 
@@ -216,10 +216,10 @@ int main(int argc, char **argv) {
                 switch (signo) {
                 case SIGINT:
                 case SIGTERM:
-                    info("received signal %d, exiting\n", signo);
+                    debug("received signal %d, exiting\n", signo);
                     goto cleanup;
                 case SIGCHLD:
-                    info("received SIGCHLD\n");
+                    debug("received SIGCHLD\n");
                     if (child_pid < 0) {
                         critical("but no child was created??? wtf\n");
                         exit_status = 1;
@@ -228,7 +228,7 @@ int main(int argc, char **argv) {
                     int wstatus;
                     waitpid(child_pid, &wstatus, 0);
                     if (WIFEXITED(wstatus)) {
-                        info("child exited with code %d\n", WEXITSTATUS(wstatus));
+                        debug("child exited with code %d\n", WEXITSTATUS(wstatus));
                     }
                     goto cleanup;
                 }
