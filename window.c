@@ -62,3 +62,14 @@ struct window *create_window_from_screenshot(struct screenshot *screenshot) {
     return window;
 }
 
+void window_cleanup(struct window *window) {
+    if (window->layer_surface) {
+        zwlr_layer_surface_v1_destroy(window->layer_surface);
+    }
+    if (window->wl_surface) {
+        wl_surface_destroy(window->wl_surface);
+    }
+    wl_list_remove(&window->link);
+    free(window);
+}
+

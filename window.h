@@ -13,6 +13,7 @@ struct window {
 extern struct wl_list windows;
 
 struct window *create_window_from_screenshot(struct screenshot *screenshot);
+void window_cleanup(struct window *window);
 
 #endif /* #ifndef WINDOW_H */
 

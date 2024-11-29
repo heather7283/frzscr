@@ -112,7 +112,6 @@ struct wl_buffer *create_buffer(void **data, enum wl_shm_format format,
 
     pool = wl_shm_create_pool(wayland.shm, fd, size);
     buff = wl_shm_pool_create_buffer(pool, 0, width, height, stride, format);
-    //wl_buffer_add_listener(buffer, &buffer_listener, buffer);
 
     wl_shm_pool_destroy(pool);
 

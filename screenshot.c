@@ -1,5 +1,7 @@
 #include <stdlib.h>
-#include <wayland-client-core.h>
+#include <string.h>
+#include <errno.h>
+#include <sys/mman.h>
 #include <wayland-client.h>
 
 #include "wlr-screencopy-unstable-v1-client.h"
@@ -33,6 +35,7 @@ static void frame_ready_handler(void *data, struct zwlr_screencopy_frame_v1 *fra
                                 uint32_t tv_sec_hi, uint32_t tv_sec_lo, uint32_t tv_nsec) {
     struct screenshot *sshot = data;
     sshot->ready = 1;
+    zwlr_screencopy_frame_v1_destroy(frame);
 }
 
 static void frame_failed_handler(void *data, struct zwlr_screencopy_frame_v1 *frame) {
@@ -62,5 +65,14 @@ struct screenshot *take_screenshot(struct output *output) {
     }
 
     return screenshot;
+}
+
+void screenshot_cleanup(struct screenshot *screenshot) {
+    wl_buffer_destroy(screenshot->wl_buffer);
+    if (munmap(screenshot->data, screenshot->stride * screenshot->height) < 0) {
+        warn("munmap() failed during cleanup: %s\n", strerror(errno));
+    }
+    wl_list_remove(&screenshot->link);
+    free(screenshot);
 }
 

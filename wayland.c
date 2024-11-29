@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <wayland-client.h>
 #include <wayland-util.h>
@@ -61,9 +62,9 @@ static void registry_global(void *data, struct wl_registry *registry, uint32_t i
     } else if (strcmp(interface, wl_shm_interface.name) == 0) {
         wayland.shm = wl_registry_bind(registry, id, &wl_shm_interface, 1);
     } else if (strcmp(interface, wl_output_interface.name) == 0) {
-        struct output *output = malloc(sizeof(struct output));
+        struct output *output = calloc(1, sizeof(struct output));
         if (output == NULL) {
-            die("malloc failed\n");
+            die("calloc failed\n");
         }
         wl_list_insert(&wayland.outputs, &output->link);
         output->wl_output = wl_registry_bind(registry, id, &wl_output_interface, 1);
@@ -95,6 +96,7 @@ void wayland_init(void) {
     if (wayland.display == NULL) {
         die("unable to connect to wayland compositor\n");
     }
+    wayland.fd = wl_display_get_fd(wayland.display);
 
     wayland.registry = wl_display_get_registry(wayland.display);
     if (wayland.registry == NULL) {
@@ -129,6 +131,48 @@ void wayland_init(void) {
     }
     if (wl_display_roundtrip(wayland.display) < 0) {
         die("wl_display_roundtrip() failed\n");
+    }
+}
+
+void wayland_cleanup(void) {
+    struct output *output, *output_tmp;
+    wl_list_for_each_safe(output, output_tmp, &wayland.outputs, link) {
+        if (output->xdg_output) {
+            zxdg_output_v1_destroy(output->xdg_output);
+        }
+        if (output->wl_output) {
+            wl_output_destroy(output->wl_output);
+        }
+        if (output->name) {
+            free(output->name);
+        }
+        if (output->description) {
+            free(output->description);
+        }
+        wl_list_remove(&output->link);
+        free(output);
+    }
+    if (wayland.xdg_output_manager) {
+        zxdg_output_manager_v1_destroy(wayland.xdg_output_manager);
+    }
+    if (wayland.screencopy_manager) {
+        zwlr_screencopy_manager_v1_destroy(wayland.screencopy_manager);
+    }
+    if (wayland.layer_shell) {
+        zwlr_layer_shell_v1_destroy(wayland.layer_shell);
+    }
+    if (wayland.shm) {
+        wl_shm_destroy(wayland.shm);
+    }
+    if (wayland.compositor) {
+        wl_compositor_destroy(wayland.compositor);
+    }
+    if (wayland.registry) {
+        wl_registry_destroy(wayland.registry);
+    }
+    if (wayland.display) {
+        wl_display_flush(wayland.display);
+        wl_display_disconnect(wayland.display);
     }
 }
 

@@ -20,6 +20,7 @@ struct screenshot {
 extern struct wl_list screenshots;
 
 struct screenshot *take_screenshot(struct output *output);
+void screenshot_cleanup(struct screenshot *screenshot);
 
 #endif /* #ifndef SCREENSHOT_H */
 

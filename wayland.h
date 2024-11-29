@@ -5,6 +5,7 @@
 #include <wayland-client.h>
 
 struct wayland {
+    int fd;
     struct wl_display *display;
     struct wl_registry *registry;
     struct wl_compositor *compositor;
@@ -28,6 +29,7 @@ struct output {
 };
 
 void wayland_init(void);
+void wayland_cleanup(void);
 
 #endif /* #ifndef WAYLAND_H */
 
