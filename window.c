@@ -42,8 +42,6 @@ struct window *create_window_from_screenshot(struct screenshot *screenshot) {
         ZWLR_LAYER_SHELL_V1_LAYER_TOP,
         "frzscr"
     );
-    zwlr_layer_surface_v1_set_anchor(window->layer_surface, ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM);
-
     if (window->layer_surface == NULL) {
         die("couldn't create a zwlr_layer_surface\n");
     }
@@ -51,6 +49,8 @@ struct window *create_window_from_screenshot(struct screenshot *screenshot) {
     zwlr_layer_surface_v1_set_size(window->layer_surface,
                                    screenshot->output->logical_geometry.w,
                                    screenshot->output->logical_geometry.h);
+    zwlr_layer_surface_v1_set_anchor(window->layer_surface, ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM);
+
     zwlr_layer_surface_v1_add_listener(window->layer_surface, &layer_surface_listener, window);
     wl_surface_commit(window->wl_surface);
     wl_display_roundtrip(wayland.display);
