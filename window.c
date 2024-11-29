@@ -4,13 +4,11 @@
 #include <wayland-client-core.h>
 #include <wayland-client.h>
 
-#include "screenshot.h"
 #include "wlr-layer-shell-unstable-v1-client.h"
 
 #include "common.h"
 #include "window.h"
 #include "wayland.h"
-#include "shm.h"
 
 struct wl_list windows;
 

@@ -67,6 +67,7 @@ static void registry_global(void *data, struct wl_registry *registry, uint32_t i
         }
         wl_list_insert(&wayland.outputs, &output->link);
         output->wl_output = wl_registry_bind(registry, id, &wl_output_interface, 1);
+
     } else if (strcmp(interface, zwlr_layer_shell_v1_interface.name) == 0) {
         wayland.layer_shell = wl_registry_bind(registry, id, &zwlr_layer_shell_v1_interface, 1);
     } else if (strcmp(interface, zwlr_screencopy_manager_v1_interface.name) == 0) {
@@ -79,7 +80,7 @@ static void registry_global(void *data, struct wl_registry *registry, uint32_t i
 }
 
 static void registry_global_remove(void *data, struct wl_registry *registry, uint32_t id) {
-    //debug("got a registry global remove event for %d\n", id);
+    // no-op
 }
 
 static const struct wl_registry_listener registry_listener = {
@@ -94,13 +95,11 @@ void wayland_init(void) {
     if (wayland.display == NULL) {
         die("unable to connect to wayland compositor\n");
     }
-    //debug("connected to wl_display\n");
 
     wayland.registry = wl_display_get_registry(wayland.display);
     if (wayland.registry == NULL) {
         die("registry is NULL\n");
     }
-    //debug("got wl_registry\n");
     wl_registry_add_listener(wayland.registry, &registry_listener, NULL);
 
     wl_display_dispatch(wayland.display);

@@ -118,3 +118,4 @@ struct wl_buffer *create_buffer(void **data, enum wl_shm_format format,
 
     return buff;
 }
+

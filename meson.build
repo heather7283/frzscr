@@ -53,3 +53,4 @@ executable('frzscr',
     dependencies: [ wayland_client_dep, libm ],
     install: true
 )
+

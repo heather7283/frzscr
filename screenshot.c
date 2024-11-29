@@ -58,8 +58,9 @@ struct screenshot *take_screenshot(struct output *output) {
     wl_display_roundtrip(wayland.display);
     wl_display_dispatch(wayland.display);
     if (screenshot->ready != 1) {
-        die("screenshot not ready after roundrip and dispatch (most likely my own skill issue)\n");
+        die("screenshot not ready after roundrip and dispatch (wtf)\n");
     }
 
     return screenshot;
 }
+
