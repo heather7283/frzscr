@@ -65,6 +65,9 @@ void parse_command_line(int *argc, char ***argv) {
 int main(int argc, char **argv) {
     int exit_status = 0;
 
+    int signal_fd = -1;
+    int epoll_fd = -1;
+
     wl_list_init(&windows);
     wl_list_init(&screenshots);
 
@@ -92,15 +95,13 @@ int main(int argc, char **argv) {
     }
 
     /* set up signalfd */
-    int signal_fd = signalfd(-1, &mask, 0);
-    if (signal_fd == -1) {
+    if ((signal_fd = signalfd(-1, &mask, 0)) == -1) {
         critical("failed to set up signalfd: %s\n", strerror(errno));
         goto cleanup;
     }
 
     /* set up epoll */
-    int epoll_fd = epoll_create1(0);
-    if (epoll_fd == -1) {
+    if ((epoll_fd = epoll_create1(0)) == -1) {
         critical("failed to set up epoll: %s\n", strerror(errno));
         goto cleanup;
     }
@@ -181,8 +182,12 @@ cleanup:
 
     wayland_cleanup();
 
-    close(epoll_fd);
-    close(signal_fd);
+    if (epoll_fd > 0) {
+        close(epoll_fd);
+    }
+    if (signal_fd > 0) {
+        close(signal_fd);
+    }
 
     exit(exit_status);
 }
