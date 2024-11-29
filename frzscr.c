@@ -68,6 +68,7 @@ int main(int argc, char **argv) {
     int signal_fd = -1;
     int epoll_fd = -1;
 
+    wl_list_init(&wayland.outputs);
     wl_list_init(&windows);
     wl_list_init(&screenshots);
 

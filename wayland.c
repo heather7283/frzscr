@@ -90,8 +90,6 @@ static const struct wl_registry_listener registry_listener = {
 };
 
 void wayland_init(void) {
-    wl_list_init(&wayland.outputs);
-
     wayland.display = wl_display_connect(NULL);
     if (wayland.display == NULL) {
         die("unable to connect to wayland compositor\n");
