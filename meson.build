@@ -14,7 +14,12 @@ libm = meson.get_compiler('c').find_library('m')
 wayland_scanner = find_program('wayland-scanner')
 wayland_client_dep = dependency('wayland-client')
 
-protocols = ['wlr-layer-shell-unstable-v1', 'wlr-screencopy-unstable-v1', 'xdg-shell']
+protocols = [
+    'wlr-layer-shell-unstable-v1',
+    'wlr-screencopy-unstable-v1',
+    'xdg-shell',
+    'xdg-output-unstable-v1'
+]
 protocol_sources = []
 
 foreach protocol : protocols

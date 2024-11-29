@@ -50,11 +50,9 @@ struct window *create_window_from_screenshot(struct screenshot *screenshot) {
         die("couldn't create a zwlr_layer_surface\n");
     }
 
-    // TODO: replace with actual geometry instead of hardcoding 1920x1080
-    // needs xdg_output for correct output size detection?
     zwlr_layer_surface_v1_set_size(window->layer_surface,
-                                   1920,  //screenshot->output->geometry.x,
-                                   1080); //screenshot->output->geometry.y);
+                                   screenshot->output->logical_geometry.w,
+                                   screenshot->output->logical_geometry.h);
     zwlr_layer_surface_v1_add_listener(window->layer_surface, &layer_surface_listener, window);
     wl_surface_commit(window->wl_surface);
     wl_display_roundtrip(wayland.display);
