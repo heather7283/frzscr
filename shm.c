@@ -93,7 +93,7 @@ int os_create_anonymous_file(off_t size) {
 }
 
 struct wl_buffer *create_buffer(void **data, enum wl_shm_format format,
-                                int32_t width, int32_t height, int32_t stride) {
+                                uint32_t width, uint32_t height, uint32_t stride) {
     size_t size = stride * height;
 
     struct wl_shm_pool *pool;
