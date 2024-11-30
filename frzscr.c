@@ -4,6 +4,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <wait.h>
+#include <stdbool.h>
 #include <sys/epoll.h>
 #include <sys/signalfd.h>
 #include <wayland-util.h>
@@ -48,7 +49,6 @@ void parse_command_line(int *argc, char ***argv) {
         switch (opt) {
         case 'o':
             debug("output name supplied on command line: %s\n", optarg);
-            warn("output option not implemented!\n");
             config.output = strdup(optarg);
             break;
         case 'h':
@@ -112,8 +112,24 @@ int main(int argc, char **argv) {
     wayland_init();
 
     struct output *output;
-    wl_list_for_each(output, &wayland.outputs, link) {
-        wl_list_insert(&screenshots, &take_screenshot(output)->link);
+    if (config.output == NULL) {
+        wl_list_for_each(output, &wayland.outputs, link) {
+            wl_list_insert(&screenshots, &take_screenshot(output)->link);
+        }
+    } else {
+        wl_list_for_each(output, &wayland.outputs, link) {
+            bool output_found = false;
+            if (strcmp(output->name, config.output) == 0) {
+                wl_list_insert(&screenshots, &take_screenshot(output)->link);
+                output_found = true;
+                break;
+            }
+            if (!output_found) {
+                critical("output %s not found\n", config.output);
+                exit_status = 1;
+                goto cleanup;
+            }
+        }
     }
 
     struct screenshot *screenshot, *screenshot_tmp;
