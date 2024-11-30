@@ -1,4 +1,5 @@
 #include <signal.h>
+#include <stdlib.h>
 #include <string.h>
 #include <getopt.h>
 #include <errno.h>
@@ -21,9 +22,11 @@ unsigned int DEBUG_LEVEL = 1;
 struct config {
     char *output;
     bool fork_child;
+    unsigned int timeout;
 } config = {
     .output = NULL,
     .fork_child = false,
+    .timeout = 0,
 };
 
 void print_help_and_exit(int exit_status) {
@@ -36,6 +39,7 @@ void print_help_and_exit(int exit_status) {
         "command line options:\n"
         "    -h               print this help message and exit\n"
         "    -o OUTPUT        only freeze this output (eg eDP-1)\n"
+        "    -t TIMEOUT       kill child (with -c) and exit after TIMEOUT seconds\n"
         "    -c CMD [ARGS...] fork CMD and wait for it to exit\n";
 
     fputs(help_string, stderr);
@@ -45,11 +49,19 @@ void print_help_and_exit(int exit_status) {
 void parse_command_line(int *argc, char ***argv) {
     int opt;
 
-    while ((opt = getopt(*argc, *argv, ":o:ch")) != -1) {
+    while ((opt = getopt(*argc, *argv, ":o:t:h")) != -1) {
         switch (opt) {
         case 'o':
             debug("output name supplied on command line: %s\n", optarg);
             config.output = strdup(optarg);
+            break;
+        case 't':
+            debug("timeout supplied on command line: %s\n", optarg);
+            int t = atoi(optarg);
+            if (t < 1) {
+                die("invalid timeout, expected unsigned int > 0, got %d\n", t);
+            }
+            config.timeout = t;
             break;
         case 'h':
             print_help_and_exit(0);
@@ -153,12 +165,18 @@ int main(int argc, char **argv) {
         }
     }
 
+    if (config.timeout > 0) {
+        debug("setting alarm for %d seconds\n", config.timeout);
+        alarm(config.timeout);
+    }
+
     /* block signals so we can catch them later */
     sigset_t mask;
     sigemptyset(&mask);
     sigaddset(&mask, SIGINT);
     sigaddset(&mask, SIGTERM);
     sigaddset(&mask, SIGCHLD);
+    sigaddset(&mask, SIGALRM);
     if (sigprocmask(SIG_BLOCK, &mask, NULL) == -1) {
         critical("failed to block signals: %s\n", strerror(errno));
         goto cleanup;
@@ -242,6 +260,13 @@ int main(int argc, char **argv) {
                     waitpid(child_pid, &wstatus, 0);
                     if (WIFEXITED(wstatus)) {
                         debug("child exited with code %d\n", WEXITSTATUS(wstatus));
+                    }
+                    goto cleanup;
+                case SIGALRM:
+                    debug("received SIGALRM\n");
+                    if (child_pid > 0) {
+                        debug("killing child with pid %d (not waiting)\n", child_pid);
+                        kill(child_pid, SIGTERM);
                     }
                     goto cleanup;
                 }
