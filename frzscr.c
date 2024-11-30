@@ -20,10 +20,10 @@ unsigned int DEBUG_LEVEL = 1;
 
 struct config {
     char *output;
-    char fork_child;
+    bool fork_child;
 } config = {
     .output = NULL,
-    .fork_child = 'N',
+    .fork_child = false,
 };
 
 void print_help_and_exit(int exit_status) {
@@ -54,9 +54,6 @@ void parse_command_line(int *argc, char ***argv) {
         case 'h':
             print_help_and_exit(0);
             break;
-        case 'c':
-            config.fork_child = 'Y';
-            break;
         case '?':
             critical("unknown option: %c\n", optopt);
             print_help_and_exit(1);
@@ -85,7 +82,7 @@ int main(int argc, char **argv) {
     char **child_argv = NULL;
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-c") == 0) {
-            config.fork_child = 'Y';
+            config.fork_child = true;
             child_argc = argc - i - 1;
             child_argv = &argv[i + 1];
             argc = i;
@@ -99,7 +96,7 @@ int main(int argc, char **argv) {
         debug("argv[%d]: %s\n", i, argv[i]);
     }
 
-    if (config.fork_child == 'Y') {
+    if (config.fork_child) {
         if (child_argc < 1) {
             die("empty child command\n");
         }
@@ -139,7 +136,7 @@ int main(int argc, char **argv) {
 
     wl_display_roundtrip(wayland.display);
 
-    if (config.fork_child == 'Y') {
+    if (config.fork_child) {
         child_pid = fork();
         switch (child_pid) {
         case -1:
