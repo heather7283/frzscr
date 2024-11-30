@@ -9,6 +9,8 @@
 #include "common.h"
 #include "window.h"
 #include "wayland.h"
+#include "shm.h"
+#include "utils.h"
 
 struct wl_list windows;
 
@@ -34,7 +36,6 @@ struct window *create_window_from_screenshot(struct screenshot *screenshot) {
     if (window->wl_surface == NULL) {
         die("couldn't create a wl_surface\n");
     }
-    wl_surface_set_buffer_transform(window->wl_surface, screenshot->output->transform);
 
     window->layer_surface = zwlr_layer_shell_v1_get_layer_surface(
         wayland.layer_shell,
@@ -55,9 +56,24 @@ struct window *create_window_from_screenshot(struct screenshot *screenshot) {
     zwlr_layer_surface_v1_add_listener(window->layer_surface, &layer_surface_listener, window);
     wl_surface_commit(window->wl_surface);
     wl_display_roundtrip(wayland.display);
-    wl_display_dispatch(wayland.display);
 
-    wl_surface_attach(window->wl_surface, screenshot->wl_buffer, 0, 0);
+    int bpp = bytes_per_pixel_from_format(screenshot->format);
+    if (bpp == 0) {
+        die("%x is not a known format, please report this as a bug\n",
+            screenshot->format);
+    }
+
+    window->wl_buffer = create_buffer(&window->data, screenshot->format,
+                                      screenshot->output->logical_geometry.w,
+                                      screenshot->output->logical_geometry.h,
+                                      screenshot->output->logical_geometry.w * bpp);
+
+    rotate_image(window->data, screenshot->data,
+                 screenshot->width, screenshot->height,
+                 bpp,
+                 rotate_angle_from_transform(screenshot->output->transform));
+
+    wl_surface_attach(window->wl_surface, window->wl_buffer, 0, 0);
     wl_surface_commit(window->wl_surface);
 
     return window;

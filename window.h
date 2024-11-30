@@ -6,6 +6,8 @@
 #include "screenshot.h"
 
 struct window {
+    void *data;
+    struct wl_buffer *wl_buffer;
     struct wl_surface *wl_surface;
     struct zwlr_layer_surface_v1 *layer_surface;
     struct wl_list link;

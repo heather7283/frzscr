@@ -21,7 +21,7 @@ static void frame_buffer_handler(void *data, struct zwlr_screencopy_frame_v1 *fr
     sshot->height = height;
     sshot->stride = stride;
 
-    sshot->wl_buffer = create_buffer(&sshot->data, sshot->format, width, height, stride);
+    sshot->wl_buffer = create_buffer(&sshot->data, format, width, height, stride);
 
     zwlr_screencopy_frame_v1_copy(frame, sshot->wl_buffer);
 }
@@ -58,7 +58,10 @@ struct screenshot *take_screenshot(struct output *output) {
     screenshot->output = output;
 
     struct zwlr_screencopy_frame_v1 *frame =
-        zwlr_screencopy_manager_v1_capture_output(wayland.screencopy_manager, 0, output->wl_output);
+        zwlr_screencopy_manager_v1_capture_output_region(wayland.screencopy_manager, 0,
+                                                         screenshot->output->wl_output, 0, 0,
+                                                         screenshot->output->logical_geometry.w,
+                                                         screenshot->output->logical_geometry.h);
     zwlr_screencopy_frame_v1_add_listener(frame, &frame_listener, screenshot);
 
     wl_display_roundtrip(wayland.display);
@@ -66,6 +69,11 @@ struct screenshot *take_screenshot(struct output *output) {
     if (!screenshot->ready) {
         die("screenshot not ready after roundrip and dispatch (wtf)\n");
     }
+
+    debug("captured sshot of %s (%dx%d) size %dx%d stride %d\n",
+          screenshot->output->name,
+          screenshot->output->logical_geometry.w, screenshot->output->logical_geometry.h,
+          screenshot->width, screenshot->height, screenshot->stride);
 
     return screenshot;
 }
