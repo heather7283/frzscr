@@ -7,6 +7,7 @@
 
 struct window {
     void *data;
+    size_t data_size;
     struct wl_buffer *wl_buffer;
     struct wl_surface *wl_surface;
     struct zwlr_layer_surface_v1 *layer_surface;

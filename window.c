@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <wayland-client-core.h>
+#include <errno.h>
+#include <sys/mman.h>
 #include <wayland-client.h>
 
 #include "wlr-layer-shell-unstable-v1-client.h"
@@ -48,9 +49,10 @@ struct window *create_window_from_screenshot(struct screenshot *screenshot) {
         die("couldn't create a zwlr_layer_surface\n");
     }
 
-    zwlr_layer_surface_v1_set_size(window->layer_surface,
-                                   screenshot->output->logical_geometry.w,
-                                   screenshot->output->logical_geometry.h);
+    int32_t output_w = screenshot->output->logical_geometry.w;
+    int32_t output_h = screenshot->output->logical_geometry.h;
+
+    zwlr_layer_surface_v1_set_size(window->layer_surface, output_w, output_h);
     zwlr_layer_surface_v1_set_anchor(window->layer_surface, ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM);
 
     zwlr_layer_surface_v1_add_listener(window->layer_surface, &layer_surface_listener, window);
@@ -64,9 +66,8 @@ struct window *create_window_from_screenshot(struct screenshot *screenshot) {
     }
 
     window->wl_buffer = create_buffer(&window->data, screenshot->format,
-                                      screenshot->output->logical_geometry.w,
-                                      screenshot->output->logical_geometry.h,
-                                      screenshot->output->logical_geometry.w * bpp);
+                                      output_w, output_h, output_w * bpp);
+    window->data_size = output_h * output_w * bpp;
 
     rotate_image(window->data, screenshot->data,
                  screenshot->width, screenshot->height,
@@ -85,6 +86,14 @@ void window_cleanup(struct window *window) {
     }
     if (window->wl_surface) {
         wl_surface_destroy(window->wl_surface);
+    }
+    if (window->wl_buffer) {
+        wl_buffer_destroy(window->wl_buffer);
+    }
+    if (window->data != NULL) {
+        if (munmap(window->data, window->data_size) < 0) {
+            warn("munmap() failed during cleanup: %s\n", strerror(errno));
+        }
     }
     wl_list_remove(&window->link);
     free(window);
