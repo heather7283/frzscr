@@ -2,6 +2,7 @@
 #define SCREENSHOT_H
 
 #include <stdint.h>
+#include <stdbool.h>
 #include <wayland-client.h>
 
 #include "wayland.h"
@@ -13,7 +14,7 @@ struct screenshot {
     uint32_t flags;
     enum wl_shm_format format;
     struct output *output;
-    int8_t ready;
+    bool ready;
     struct wl_list link;
 };
 

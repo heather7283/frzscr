@@ -34,7 +34,7 @@ static void frame_flags_handler(void *data, struct zwlr_screencopy_frame_v1 *fra
 static void frame_ready_handler(void *data, struct zwlr_screencopy_frame_v1 *frame,
                                 uint32_t tv_sec_hi, uint32_t tv_sec_lo, uint32_t tv_nsec) {
     struct screenshot *sshot = data;
-    sshot->ready = 1;
+    sshot->ready = true;
     zwlr_screencopy_frame_v1_destroy(frame);
 }
 
@@ -51,7 +51,10 @@ static const struct zwlr_screencopy_frame_v1_listener frame_listener = {
 };
 
 struct screenshot *take_screenshot(struct output *output) {
-    struct screenshot *screenshot = malloc(sizeof(struct screenshot));
+    struct screenshot *screenshot = calloc(1, sizeof(struct screenshot));
+    if (screenshot == NULL) {
+        die("failed to calloc() screenshot struct: %s\n", strerror(errno));
+    }
     screenshot->output = output;
 
     struct zwlr_screencopy_frame_v1 *frame =
@@ -60,7 +63,7 @@ struct screenshot *take_screenshot(struct output *output) {
 
     wl_display_roundtrip(wayland.display);
     wl_display_dispatch(wayland.display);
-    if (screenshot->ready != 1) {
+    if (!screenshot->ready) {
         die("screenshot not ready after roundrip and dispatch (wtf)\n");
     }
 
