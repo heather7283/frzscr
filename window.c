@@ -34,6 +34,7 @@ struct window *create_window_from_screenshot(struct screenshot *screenshot) {
     if (window->wl_surface == NULL) {
         die("couldn't create a wl_surface\n");
     }
+    wl_surface_set_buffer_transform(window->wl_surface, screenshot->output->transform);
 
     window->layer_surface = zwlr_layer_shell_v1_get_layer_surface(
         wayland.layer_shell,

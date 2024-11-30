@@ -55,6 +55,25 @@ static const struct zxdg_output_v1_listener xdg_output_listener = {
 	.done = xdg_output_done_handler,
 };
 
+static void output_geometry_handler(void *data, struct wl_output *wl_output,
+                                    int32_t x, int32_t y, int32_t phys_w, int32_t phys_h,
+                                    int32_t subpixel,
+                                    const char *make, const char *model,
+                                    int32_t transform) {
+    struct output *output = data;
+    output->transform = transform;
+}
+
+static void output_mode_handler(void *data, struct wl_output *wl_output, uint32_t flags,
+                                int32_t width, int32_t height, int32_t refresh) {
+    // no-op
+}
+
+static const struct wl_output_listener output_listener = {
+    .geometry = output_geometry_handler,
+    .mode = output_mode_handler,
+};
+
 static void registry_global(void *data, struct wl_registry *registry, uint32_t id,
 	                        const char *interface, uint32_t version) {
     if (strcmp(interface, wl_compositor_interface.name) == 0) {
@@ -68,7 +87,7 @@ static void registry_global(void *data, struct wl_registry *registry, uint32_t i
         }
         wl_list_insert(&wayland.outputs, &output->link);
         output->wl_output = wl_registry_bind(registry, id, &wl_output_interface, 1);
-
+        wl_output_add_listener(output->wl_output, &output_listener, output);
     } else if (strcmp(interface, zwlr_layer_shell_v1_interface.name) == 0) {
         wayland.layer_shell = wl_registry_bind(registry, id, &zwlr_layer_shell_v1_interface, 1);
     } else if (strcmp(interface, zwlr_screencopy_manager_v1_interface.name) == 0) {

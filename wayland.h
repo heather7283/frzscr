@@ -24,6 +24,7 @@ struct output {
     struct {
         int32_t x, y, w, h;
     } logical_geometry;
+    enum wl_output_transform transform;
     char *name, *description;
     struct wl_list link;
 };
