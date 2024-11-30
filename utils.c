@@ -100,7 +100,7 @@ enum rotate_image_angle rotate_angle_from_transform(enum wl_output_transform tra
         case WL_OUTPUT_TRANSFORM_270:
             return ROTATE_270;
         default:
-            warn("%d is not a known transform, defaulting to 0 (FIXME)\n");
+            warn("%d is not a known transform, defaulting to 0 (FIXME)\n", transform);
             return ROTATE_0;
     }
 }
