@@ -102,7 +102,7 @@ struct wl_buffer *create_buffer(void **data, enum wl_shm_format format,
 
     fd = os_create_anonymous_file(size);
     if (fd < 0) {
-        die("creating a buffer file for %d B failed: %m\n",	(int)size);
+        die("creating a buffer file for %d B failed: %s\n",	(int)size, strerror(errno));
     }
 
     *data = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
