@@ -73,8 +73,11 @@ int bytes_per_pixel_from_format(enum wl_shm_format format) {
         case WL_SHM_FORMAT_XBGR8888:
             return 4;
 
-        case WL_SHM_FORMAT_RGB565:
+        case WL_SHM_FORMAT_BGR888:
         case WL_SHM_FORMAT_RGB888:
+            return 3;
+
+        case WL_SHM_FORMAT_RGB565:
             return 2;
 
         case WL_SHM_FORMAT_C8:
