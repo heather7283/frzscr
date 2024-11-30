@@ -261,13 +261,10 @@ int main(int argc, char **argv) {
                     if (WIFEXITED(wstatus)) {
                         debug("child exited with code %d\n", WEXITSTATUS(wstatus));
                     }
+                    child_pid = -1;
                     goto cleanup;
                 case SIGALRM:
                     debug("received SIGALRM\n");
-                    if (child_pid > 0) {
-                        debug("killing child with pid %d (not waiting)\n", child_pid);
-                        kill(child_pid, SIGTERM);
-                    }
                     goto cleanup;
                 }
             }
@@ -275,6 +272,11 @@ int main(int argc, char **argv) {
     }
 
 cleanup:
+    if (child_pid > 0) {
+        debug("killing child with pid %d (not waiting)\n", child_pid);
+        kill(child_pid, SIGTERM);
+    }
+
     wl_list_for_each_safe(screenshot, screenshot_tmp, &screenshots, link) {
         screenshot_cleanup(screenshot);
     }
