@@ -77,7 +77,7 @@ static const struct wl_output_listener output_listener = {
 static void registry_global(void *data, struct wl_registry *registry, uint32_t id,
 	                        const char *interface, uint32_t version) {
     if (strcmp(interface, wl_compositor_interface.name) == 0) {
-        wayland.compositor = wl_registry_bind(registry, id, &wl_compositor_interface, 1);
+        wayland.compositor = wl_registry_bind(registry, id, &wl_compositor_interface, 2);
     } else if (strcmp(interface, wl_shm_interface.name) == 0) {
         wayland.shm = wl_registry_bind(registry, id, &wl_shm_interface, 1);
     } else if (strcmp(interface, wl_output_interface.name) == 0) {
