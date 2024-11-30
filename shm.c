@@ -114,6 +114,7 @@ struct wl_buffer *create_buffer(void **data, enum wl_shm_format format,
     buff = wl_shm_pool_create_buffer(pool, 0, width, height, stride, format);
 
     wl_shm_pool_destroy(pool);
+    close(fd);
 
     return buff;
 }
