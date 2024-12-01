@@ -42,7 +42,7 @@ struct window *create_window_from_screenshot(struct screenshot *screenshot) {
         wayland.layer_shell,
         window->wl_surface,
         screenshot->output->wl_output,
-        ZWLR_LAYER_SHELL_V1_LAYER_TOP,
+        ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY,
         "frzscr"
     );
     if (window->layer_surface == NULL) {
