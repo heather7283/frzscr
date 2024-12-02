@@ -130,6 +130,9 @@ void wayland_init(void) {
     if (wayland.shm == NULL) {
         die("didn't get a wl_shm\n");
     }
+    if (wayland.screencopy_manager == NULL) {
+        die("didn't get zwlr_screencopy_manager_v1\n");
+    }
     if (wayland.layer_shell == NULL) {
         die("didn't get a zwlr_layer_shell_v1\n");
     }
