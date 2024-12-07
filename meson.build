@@ -9,8 +9,6 @@ add_project_arguments('-Wno-gnu-zero-variadic-macro-arguments', language: 'c')
 add_project_arguments('-Wno-unused-parameter', language: 'c')
 add_project_arguments('-Wno-unused-variable', language: 'c')
 
-libm = meson.get_compiler('c').find_library('m')
-
 wayland_scanner = find_program('wayland-scanner')
 wayland_client_dep = dependency('wayland-client')
 
@@ -51,7 +49,7 @@ executable('frzscr',
     'screenshot.c',
     'utils.c',
     protocol_sources,
-    dependencies: [ wayland_client_dep, libm ],
+    dependencies: [ wayland_client_dep ],
     install: true
 )
 
