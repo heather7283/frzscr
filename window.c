@@ -59,19 +59,15 @@ struct window *create_window_from_screenshot(struct screenshot *screenshot) {
     wl_surface_commit(window->wl_surface);
     wl_display_roundtrip(wayland.display);
 
-    int bpp = bytes_per_pixel_from_format(screenshot->format);
-    if (bpp == 0) {
-        die("%x is not a known format, please report this as a bug\n",
-            screenshot->format);
-    }
+    int bytes_per_pixel = screenshot->stride / screenshot->width;
 
     window->wl_buffer = create_buffer(&window->data, screenshot->format,
-                                      output_w, output_h, output_w * bpp);
-    window->data_size = output_h * output_w * bpp;
+                                      output_w, output_h, output_w * bytes_per_pixel);
+    window->data_size = output_h * output_w * bytes_per_pixel;
 
     rotate_image(window->data, screenshot->data,
                  screenshot->width, screenshot->height,
-                 bpp,
+                 bytes_per_pixel,
                  rotate_angle_from_transform(screenshot->output->transform));
 
     wl_surface_attach(window->wl_surface, window->wl_buffer, 0, 0);

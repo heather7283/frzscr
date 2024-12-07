@@ -63,32 +63,6 @@ void rotate_image(void *dest, const void *src, int w, int h,
     }
 }
 
-int bytes_per_pixel_from_format(enum wl_shm_format format) {
-    // this is incomplete, but I cba to write 1000 lines long switch case
-    // so I will add more formats as needed
-    switch (format) {
-        case WL_SHM_FORMAT_ARGB8888:
-        case WL_SHM_FORMAT_XRGB8888:
-        case WL_SHM_FORMAT_ABGR8888:
-        case WL_SHM_FORMAT_XBGR8888:
-            return 4;
-
-        case WL_SHM_FORMAT_BGR888:
-        case WL_SHM_FORMAT_RGB888:
-            return 3;
-
-        case WL_SHM_FORMAT_RGB565:
-            return 2;
-
-        case WL_SHM_FORMAT_C8:
-        case WL_SHM_FORMAT_R8:
-            return 1;
-
-        default:
-            return 0;
-    }
-}
-
 enum rotate_image_angle rotate_angle_from_transform(enum wl_output_transform transform) {
     switch (transform) {
         case WL_OUTPUT_TRANSFORM_NORMAL:

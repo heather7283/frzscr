@@ -12,7 +12,6 @@ enum rotate_image_angle {
 
 void rotate_image(void *dest, const void *src, int w, int h,
                   int bytes_per_pixel, enum rotate_image_angle angle);
-int bytes_per_pixel_from_format(enum wl_shm_format format);
 enum rotate_image_angle rotate_angle_from_transform(enum wl_output_transform);
 
 #endif /* #ifndef UTILS_H */
