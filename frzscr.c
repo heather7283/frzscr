@@ -17,7 +17,7 @@
 
 #define EPOLL_MAX_EVENTS 16
 
-unsigned int DEBUG_LEVEL = 1;
+unsigned int DEBUG_LEVEL = 0;
 
 struct config {
     char *output;
@@ -37,10 +37,12 @@ void print_help_and_exit(int exit_status) {
         "    frzscr [OPTIONS]\n"
         "\n"
         "command line options:\n"
-        "    -h               print this help message and exit\n"
         "    -o OUTPUT        only freeze this output (eg eDP-1)\n"
         "    -t TIMEOUT       kill child (with -c) and exit after TIMEOUT seconds\n"
-        "    -c CMD [ARGS...] fork CMD and wait for it to exit\n";
+        "    -c CMD [ARGS...] fork CMD and wait for it to exit\n"
+        "                     all arguments after -c are treated as ARGS to CMD\n"
+        "    -v               increase verbosity\n"
+        "    -h               print this help message and exit\n";
 
     fputs(help_string, stderr);
     exit(exit_status);
@@ -49,7 +51,7 @@ void print_help_and_exit(int exit_status) {
 void parse_command_line(int *argc, char ***argv) {
     int opt;
 
-    while ((opt = getopt(*argc, *argv, ":o:t:h")) != -1) {
+    while ((opt = getopt(*argc, *argv, ":o:t:hv")) != -1) {
         switch (opt) {
         case 'o':
             debug("output name supplied on command line: %s\n", optarg);
@@ -65,6 +67,9 @@ void parse_command_line(int *argc, char ***argv) {
             break;
         case 'h':
             print_help_and_exit(0);
+            break;
+        case 'v':
+            DEBUG_LEVEL += 1;
             break;
         case '?':
             critical("unknown option: %c\n", optopt);
