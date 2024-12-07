@@ -58,10 +58,8 @@ struct screenshot *take_screenshot(struct output *output) {
     screenshot->output = output;
 
     struct zwlr_screencopy_frame_v1 *frame =
-        zwlr_screencopy_manager_v1_capture_output_region(wayland.screencopy_manager, 0,
-                                                         screenshot->output->wl_output, 0, 0,
-                                                         screenshot->output->logical_geometry.w,
-                                                         screenshot->output->logical_geometry.h);
+        zwlr_screencopy_manager_v1_capture_output(wayland.screencopy_manager, 0,
+                                                  screenshot->output->wl_output);
     zwlr_screencopy_frame_v1_add_listener(frame, &frame_listener, screenshot);
 
     wl_display_roundtrip(wayland.display);
