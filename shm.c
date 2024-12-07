@@ -9,84 +9,48 @@
 
 #include "common.h"
 #include "wayland.h"
-#include "window.h"
-
-static int set_cloexec_or_close(int fd) {
-    long flags;
-
-    if (fd == -1) return -1;
-
-    flags = fcntl(fd, F_GETFD);
-    if (flags == -1) goto err;
-
-    if (fcntl(fd, F_SETFD, flags | FD_CLOEXEC) == -1) goto err;
-
-    return fd;
-err:
-    close(fd);
-    return -1;
-}
-
 
 static int create_tmpfile_cloexec(char *tmpname) {
-    int fd;
+    int fd = mkstemp(tmpname);
 
-#ifdef HAVE_MKOSTEMP
-    fd = mkostemp(tmpname, O_CLOEXEC);
-    if (fd >= 0)
-        unlink(tmpname);
-#else
-    fd = mkstemp(tmpname);
-    if (fd >= 0) {
-        fd = set_cloexec_or_close(fd);
-        unlink(tmpname);
+    if (fd < 0) {
+        die("failed to create temporary file %s: %s\n", tmpname, strerror(errno));
     }
-#endif
+
+    if (unlink(tmpname) < 0) {
+        warn("failed to remove temporary file %s: %s\n", tmpname, strerror(errno));
+    };
+
+    int flags = fcntl(fd, F_GETFD);
+    if (flags == -1 || fcntl(fd, F_SETFD, flags | FD_CLOEXEC) == -1) {
+        die("fcntl failed: %s\n", strerror(errno));
+    }
 
     return fd;
 }
 
-/*
- * Create a new, unique, anonymous file of the given size, and
- * return the file descriptor for it. The file descriptor is set
- * CLOEXEC. The file is immediately suitable for mmap()'ing
- * the given size at offset zero.
- *
- * The file should not have a permanent backing store like a disk,
- * but may have if XDG_RUNTIME_DIR is not properly implemented in OS.
- *
- * The file name is deleted from the file system.
- *
- * The file is suitable for buffer sharing between processes by
- * transmitting the file descriptor over Unix sockets using the
- * SCM_RIGHTS methods.
- */
-int os_create_anonymous_file(off_t size) {
-    static const char template[] = "/weston-shared-XXXXXX";
-    const char *path;
-    char *name;
-    int fd;
+static int os_create_anonymous_file(off_t size) {
+    static const char template[] = "/frzscr-shared-XXXXXX";
 
-    path = getenv("XDG_RUNTIME_DIR");
-    if (!path) {
-        errno = ENOENT;
-        return -1;
+    const char *path = getenv("XDG_RUNTIME_DIR");
+    if (path == NULL) {
+        die("XDG_RUNTIME_DIR is unset (how?)\n");
     }
 
-    name = malloc(strlen(path) + sizeof(template));
-    if (!name) return -1;
+    char *name = malloc(strlen(path) + sizeof(template));
+    if (name == NULL) {
+        die("failed to alloc memory for temporary file name\n");
+    }
+
     strcpy(name, path);
     strcat(name, template);
 
-    fd = create_tmpfile_cloexec(name);
+    int fd = create_tmpfile_cloexec(name);
 
     free(name);
 
-    if (fd < 0) return -1;
-
     if (ftruncate(fd, size) < 0) {
-        close(fd);
-        return -1;
+        die("failed to ftruncate file to %d bytes: %s\n", (int)size, strerror(errno));
     }
 
     return fd;
@@ -95,23 +59,15 @@ int os_create_anonymous_file(off_t size) {
 struct wl_buffer *create_buffer(void **data, enum wl_shm_format format,
                                 uint32_t width, uint32_t height, uint32_t stride) {
     size_t size = stride * height;
-
-    struct wl_shm_pool *pool;
-    struct wl_buffer *buff;
-    int fd;
-
-    fd = os_create_anonymous_file(size);
-    if (fd < 0) {
-        die("creating a buffer file for %d B failed: %s\n",	(int)size, strerror(errno));
-    }
+    int fd = os_create_anonymous_file(size);
 
     *data = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
     if (*data == MAP_FAILED) {
         die("mmap failed: %s\n", strerror(errno));
     }
 
-    pool = wl_shm_create_pool(wayland.shm, fd, size);
-    buff = wl_shm_pool_create_buffer(pool, 0, width, height, stride, format);
+    struct wl_shm_pool *pool = wl_shm_create_pool(wayland.shm, fd, size);
+    struct wl_buffer *buff = wl_shm_pool_create_buffer(pool, 0, width, height, stride, format);
 
     wl_shm_pool_destroy(pool);
     close(fd);
