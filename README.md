@@ -3,7 +3,7 @@
 At the time of writing there's still no sane way to freeze screen on wayland (for screenshots for example) and I saw people use combination of [hyprpicker](https://github.com/hyprwm/hyprpicker) and [slurp](https://github.com/emersion/slurp) which just feels like a crutch so I decided to write this abomination.
 
 ## How it works
-Simple, it just takes a screenshot and then display this screenshot over your screen to create an illusion of frozen screen. It uses wlr-layer-shell-unstable and wlr-screencopy-unstable so make sure your composter supports them.
+Simple, it just takes a screenshot and then displays this screenshot over your screen to create an illusion of frozen screen. It uses wlr-layer-shell-unstable and wlr-screencopy-unstable so make sure your composter supports them.
 
 ## Build
 You need meson and libwayland-client to compile frzscr
