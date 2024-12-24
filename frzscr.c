@@ -23,10 +23,12 @@ struct config {
     char *output;
     bool fork_child;
     unsigned int timeout;
+    int child_kill_signal;
 } config = {
     .output = NULL,
     .fork_child = false,
     .timeout = 0,
+    .child_kill_signal = SIGTERM,
 };
 
 void print_help_and_exit(int exit_status) {
@@ -162,6 +164,9 @@ int main(int argc, char **argv) {
             goto cleanup;
         case 0:
             // child
+            if (setpgid(0, 0) < 0) {
+                warn("setpgid failed: %s, might fail to kill everyone", strerror(errno));
+            }
             execvp(child_argv[0], child_argv);
             die("execvp() failed: %s\n", strerror(errno));
         default:
@@ -278,8 +283,14 @@ int main(int argc, char **argv) {
 
 cleanup:
     if (child_pid > 0) {
-        debug("killing child with pid %d (not waiting)\n", child_pid);
-        kill(child_pid, SIGTERM);
+        debug("sending signal %d to pgid %d\n", config.child_kill_signal, child_pid);
+        if (kill(-child_pid, config.child_kill_signal) < 0) {
+            warn("failed to kill process group %d: %s\n", child_pid, strerror(errno));
+            warn("will try killing child only now\n");
+            if (kill(child_pid, config.child_kill_signal) < 0) {
+                warn("failed to kill child with pid %d: %s\n", child_pid, strerror(errno));
+            }
+        };
     }
 
     wl_list_for_each_safe(screenshot, screenshot_tmp, &screenshots, link) {
