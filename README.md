@@ -27,3 +27,9 @@ build/frzscr -t 5
 # note double -c flag, first is for frzscr itself, second is for sh
 build/frzscr -c sh -c 'grim -g "$(slurp)" - | wl-copy -t "image/png"'
 ```
+
+## Thanks (aka references)
+- [hello-wayland](https://github.com/wmww/hello-wayland) - layer shell example
+- [grim](https://git.sr.ht/~emersion/grim) - screenshot example
+- [1](https://gaultier.github.io/blog/wayland_from_scratch.html#shared-memory-the-frame-buffer), [2](https://jan.newmarch.name/Wayland/SharedMemory/) - shm examples
+- [wayland explorer](https://wayland.app) - protocol docs
