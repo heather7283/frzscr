@@ -73,7 +73,7 @@ struct window *create_window_from_screenshot(struct screenshot *screenshot) {
     rotate_image(window->data, screenshot->data,
                  screenshot->width, screenshot->height,
                  bytes_per_pixel,
-                 rotate_angle_from_transform(screenshot->output->transform));
+                 screenshot->output->transform);
 
     wl_surface_attach(window->wl_surface, window->wl_buffer, 0, 0);
     wl_surface_commit(window->wl_surface);
