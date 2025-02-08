@@ -36,7 +36,11 @@ static struct zwlr_layer_surface_v1_listener layer_surface_listener = {
 };
 
 struct window *create_window_from_screenshot(struct screenshot *screenshot) {
-    struct window *window = malloc(sizeof(struct window));
+    struct window *window = calloc(1, sizeof(struct window));
+    if (window == NULL) {
+        die("failed to allocate memory for window struct\n");
+    }
+
     window->wl_surface = wl_compositor_create_surface(wayland.compositor);
     if (window->wl_surface == NULL) {
         die("couldn't create a wl_surface\n");
