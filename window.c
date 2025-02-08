@@ -13,6 +13,10 @@
 #include "shm.h"
 #include "utils.h"
 
+#define ANCHOR_ALL \
+    (ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP | ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM | \
+    ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT | ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT)
+
 struct wl_list windows;
 
 static void layer_surface_configure(void *data, struct zwlr_layer_surface_v1 *zwlr_layer_surface_v1,
@@ -53,7 +57,7 @@ struct window *create_window_from_screenshot(struct screenshot *screenshot) {
     int32_t output_h = screenshot->output->logical_geometry.h;
 
     zwlr_layer_surface_v1_set_size(window->layer_surface, output_w, output_h);
-    zwlr_layer_surface_v1_set_anchor(window->layer_surface, ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP);
+    zwlr_layer_surface_v1_set_anchor(window->layer_surface, ANCHOR_ALL);
     zwlr_layer_surface_v1_set_exclusive_zone(window->layer_surface, -1);
 
     zwlr_layer_surface_v1_add_listener(window->layer_surface, &layer_surface_listener, window);
