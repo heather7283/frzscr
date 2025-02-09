@@ -11,7 +11,6 @@
 #include "window.h"
 #include "wayland.h"
 #include "shm.h"
-#include "utils.h"
 
 #define ANCHOR_ALL \
     (ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP | ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM | \
@@ -46,6 +45,64 @@ struct window *create_window_from_screenshot(struct screenshot *screenshot) {
         die("couldn't create a wl_surface\n");
     }
 
+    int32_t bpp = screenshot->stride / screenshot->width;
+    int32_t buf_w, buf_h, buf_stride;
+    switch (screenshot->output->transform) {
+    case WL_OUTPUT_TRANSFORM_NORMAL:
+        buf_w = screenshot->output->logical_geometry.w;
+        buf_h = screenshot->output->logical_geometry.h;
+        buf_stride = buf_h * bpp;
+        break;
+    case WL_OUTPUT_TRANSFORM_90:
+        buf_w = screenshot->output->logical_geometry.h;
+        buf_h = screenshot->output->logical_geometry.w;
+        buf_stride = buf_w * bpp;
+        wl_surface_set_buffer_transform(window->wl_surface, WL_OUTPUT_TRANSFORM_90);
+        break;
+    case WL_OUTPUT_TRANSFORM_180:
+        buf_w = screenshot->output->logical_geometry.w;
+        buf_h = screenshot->output->logical_geometry.h;
+        buf_stride = buf_h * bpp;
+        wl_surface_set_buffer_transform(window->wl_surface, WL_OUTPUT_TRANSFORM_180);
+        break;
+    case WL_OUTPUT_TRANSFORM_270:
+        buf_w = screenshot->output->logical_geometry.h;
+        buf_h = screenshot->output->logical_geometry.w;
+        buf_stride = buf_w * bpp;
+        wl_surface_set_buffer_transform(window->wl_surface, WL_OUTPUT_TRANSFORM_270);
+        break;
+    case WL_OUTPUT_TRANSFORM_FLIPPED:
+        buf_w = screenshot->output->logical_geometry.w;
+        buf_h = screenshot->output->logical_geometry.h;
+        buf_stride = buf_h * bpp;
+        wl_surface_set_buffer_transform(window->wl_surface, WL_OUTPUT_TRANSFORM_FLIPPED);
+        break;
+    case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+        buf_w = screenshot->output->logical_geometry.h;
+        buf_h = screenshot->output->logical_geometry.w;
+        buf_stride = buf_w * bpp;
+        wl_surface_set_buffer_transform(window->wl_surface, WL_OUTPUT_TRANSFORM_FLIPPED_90);
+        break;
+    case WL_OUTPUT_TRANSFORM_FLIPPED_180:
+        buf_w = screenshot->output->logical_geometry.w;
+        buf_h = screenshot->output->logical_geometry.h;
+        buf_stride = buf_h * bpp;
+        wl_surface_set_buffer_transform(window->wl_surface, WL_OUTPUT_TRANSFORM_FLIPPED_180);
+        break;
+    case WL_OUTPUT_TRANSFORM_FLIPPED_270:
+        buf_w = screenshot->output->logical_geometry.h;
+        buf_h = screenshot->output->logical_geometry.w;
+        buf_stride = buf_w * bpp;
+        wl_surface_set_buffer_transform(window->wl_surface, WL_OUTPUT_TRANSFORM_FLIPPED_270);
+        break;
+    default:
+        die("UNREACHABLE: wl_output_transform is %d\n", screenshot->output->transform);
+    }
+
+    window->wl_buffer = create_buffer(&window->data, screenshot->format,
+                                      buf_w, buf_h, buf_stride);
+    window->data_size = buf_h * buf_w * bpp;
+
     window->layer_surface = zwlr_layer_shell_v1_get_layer_surface(
         wayland.layer_shell,
         window->wl_surface,
@@ -57,10 +114,9 @@ struct window *create_window_from_screenshot(struct screenshot *screenshot) {
         die("couldn't create a zwlr_layer_surface\n");
     }
 
-    int32_t output_w = screenshot->output->logical_geometry.w;
-    int32_t output_h = screenshot->output->logical_geometry.h;
-
-    zwlr_layer_surface_v1_set_size(window->layer_surface, output_w, output_h);
+    zwlr_layer_surface_v1_set_size(window->layer_surface,
+                                   screenshot->output->logical_geometry.w,
+                                   screenshot->output->logical_geometry.h);
     zwlr_layer_surface_v1_set_anchor(window->layer_surface, ANCHOR_ALL);
     zwlr_layer_surface_v1_set_exclusive_zone(window->layer_surface, -1);
 
@@ -68,18 +124,7 @@ struct window *create_window_from_screenshot(struct screenshot *screenshot) {
     wl_surface_commit(window->wl_surface);
     wl_display_roundtrip(wayland.display);
 
-    int bytes_per_pixel = screenshot->stride / screenshot->width;
-
-    window->wl_buffer = create_buffer(&window->data, screenshot->format,
-                                      output_w, output_h, output_w * bytes_per_pixel);
-    window->data_size = output_h * output_w * bytes_per_pixel;
-
-    rotate_image(window->data, screenshot->data,
-                 screenshot->width, screenshot->height,
-                 bytes_per_pixel,
-                 screenshot->output->transform);
-
-    wl_surface_attach(window->wl_surface, window->wl_buffer, 0, 0);
+    wl_surface_attach(window->wl_surface, screenshot->wl_buffer, 0, 0);
     wl_surface_commit(window->wl_surface);
 
     return window;
