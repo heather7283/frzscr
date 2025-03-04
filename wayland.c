@@ -69,9 +69,14 @@ static void output_mode_handler(void *data, struct wl_output *wl_output, uint32_
     // no-op
 }
 
+static void output_done_handler(void *data, struct wl_output *wl_output) {
+    // no-op
+}
+
 static const struct wl_output_listener output_listener = {
     .geometry = output_geometry_handler,
     .mode = output_mode_handler,
+    .done = output_done_handler,
 };
 
 static void registry_global(void *data, struct wl_registry *registry, uint32_t id,
