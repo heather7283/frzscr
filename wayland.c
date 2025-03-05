@@ -168,12 +168,8 @@ void wayland_cleanup(void) {
         if (output->wl_output) {
             wl_output_destroy(output->wl_output);
         }
-        if (output->name) {
-            free(output->name);
-        }
-        if (output->description) {
-            free(output->description);
-        }
+        free(output->name);
+        free(output->description);
         wl_list_remove(&output->link);
         free(output);
     }
