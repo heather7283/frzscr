@@ -2,7 +2,7 @@ project(
     'frzscr', 'c',
     version: '0.1.0',
     license: 'MIT',
-    default_options: ['buildtype=release', 'warning_level=3']
+    default_options: ['warning_level=3']
 )
 
 add_project_arguments('-Wno-gnu-zero-variadic-macro-arguments', language: 'c')
