@@ -32,7 +32,7 @@ struct config {
 };
 
 void print_help_and_exit(int exit_status) {
-    const char* help_string =
+    const char *help_string =
         "frzscr - freeze screen\n"
         "\n"
         "usage:\n"
