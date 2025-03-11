@@ -42,13 +42,13 @@ foreach protocol : protocols
 endforeach
 
 executable('frzscr',
-    'frzscr.c',
-    'wayland.c',
-    'window.c',
-    'shm.c',
-    'screenshot.c',
-    'utils.c',
-    'xmalloc.c',
+    'src/frzscr.c',
+    'src/wayland.c',
+    'src/window.c',
+    'src/shm.c',
+    'src/screenshot.c',
+    'src/utils.c',
+    'src/xmalloc.c',
     protocol_sources,
     dependencies: [ wayland_client_dep ],
     install: true
