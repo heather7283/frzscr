@@ -11,6 +11,7 @@
 #include "wayland.h"
 #include "window.h"
 #include "common.h"
+#include "xmalloc.h"
 
 struct wayland wayland = {0};
 struct window window = {0};
@@ -34,13 +35,13 @@ static void xdg_output_logical_size_handler(void *data, struct zxdg_output_v1 *x
 static void xdg_output_name_handler(void *data, struct zxdg_output_v1 *xdg_output,
                                     const char *name) {
 	struct output *output = data;
-	output->name = strdup(name);
+	output->name = xstrdup(name);
 }
 
 static void xdg_output_description_handler(void *data, struct zxdg_output_v1 *xdg_output,
                                            const char *description) {
 	struct output *output = data;
-	output->description = strdup(description);
+	output->description = xstrdup(description);
 }
 
 static void xdg_output_done_handler(void *data, struct zxdg_output_v1 *xdg_output) {
@@ -86,10 +87,8 @@ static void registry_global(void *data, struct wl_registry *registry, uint32_t i
     } else if (strcmp(interface, wl_shm_interface.name) == 0) {
         wayland.shm = wl_registry_bind(registry, id, &wl_shm_interface, 1);
     } else if (strcmp(interface, wl_output_interface.name) == 0) {
-        struct output *output = calloc(1, sizeof(struct output));
-        if (output == NULL) {
-            die("calloc failed\n");
-        }
+        struct output *output = xcalloc(1, sizeof(struct output));
+
         wl_list_insert(&wayland.outputs, &output->link);
         output->wl_output = wl_registry_bind(registry, id, &wl_output_interface, 1);
         wl_output_add_listener(output->wl_output, &output_listener, output);

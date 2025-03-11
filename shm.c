@@ -9,6 +9,7 @@
 
 #include "common.h"
 #include "wayland.h"
+#include "xmalloc.h"
 
 static int create_tmpfile_cloexec(char *tmpname) {
     int fd = mkstemp(tmpname);
@@ -37,10 +38,7 @@ static int os_create_anonymous_file(off_t size) {
         die("XDG_RUNTIME_DIR is unset (how?)\n");
     }
 
-    char *name = malloc(strlen(path) + sizeof(template));
-    if (name == NULL) {
-        die("failed to alloc memory for temporary file name\n");
-    }
+    char *name = xmalloc(strlen(path) + sizeof(template));
 
     strcpy(name, path);
     strcat(name, template);

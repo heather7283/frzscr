@@ -12,6 +12,7 @@
 #include "wayland.h"
 #include "shm.h"
 #include "utils.h"
+#include "xmalloc.h"
 
 #define ANCHOR_ALL \
     (ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP | ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM | \
@@ -36,10 +37,7 @@ static struct zwlr_layer_surface_v1_listener layer_surface_listener = {
 };
 
 struct window *create_window_from_screenshot(struct screenshot *screenshot) {
-    struct window *window = calloc(1, sizeof(struct window));
-    if (window == NULL) {
-        die("failed to allocate memory for window struct\n");
-    }
+    struct window *window = xcalloc(1, sizeof(struct window));
 
     window->wl_surface = wl_compositor_create_surface(wayland.compositor);
     if (window->wl_surface == NULL) {

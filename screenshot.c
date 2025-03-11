@@ -10,6 +10,7 @@
 #include "wayland.h"
 #include "screenshot.h"
 #include "shm.h"
+#include "xmalloc.h"
 
 struct wl_list screenshots;
 
@@ -51,10 +52,7 @@ static const struct zwlr_screencopy_frame_v1_listener frame_listener = {
 };
 
 struct screenshot *take_screenshot(struct output *output) {
-    struct screenshot *screenshot = calloc(1, sizeof(struct screenshot));
-    if (screenshot == NULL) {
-        die("failed to calloc() screenshot struct: %s\n", strerror(errno));
-    }
+    struct screenshot *screenshot = xcalloc(1, sizeof(struct screenshot));
     screenshot->output = output;
 
     struct zwlr_screencopy_frame_v1 *frame =

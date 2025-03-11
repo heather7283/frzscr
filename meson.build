@@ -48,6 +48,7 @@ executable('frzscr',
     'shm.c',
     'screenshot.c',
     'utils.c',
+    'xmalloc.c',
     protocol_sources,
     dependencies: [ wayland_client_dep ],
     install: true

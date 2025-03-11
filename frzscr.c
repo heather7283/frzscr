@@ -14,6 +14,7 @@
 #include "common.h"
 #include "wayland.h"
 #include "window.h"
+#include "xmalloc.h"
 
 #define EPOLL_MAX_EVENTS 16
 
@@ -57,7 +58,7 @@ void parse_command_line(int *argc, char ***argv) {
         switch (opt) {
         case 'o':
             debug("output name supplied on command line: %s\n", optarg);
-            config.output = strdup(optarg);
+            config.output = xstrdup(optarg);
             break;
         case 't':
             debug("timeout supplied on command line: %s\n", optarg);
