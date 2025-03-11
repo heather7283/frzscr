@@ -5,6 +5,8 @@
 #include <stdbool.h>
 #include <wayland-client.h>
 
+#include "wayland.h"
+
 struct screenshot {
     struct wl_buffer *wl_buffer;
     void *data;
