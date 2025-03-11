@@ -133,18 +133,18 @@ int main(int argc, char **argv) {
             wl_list_insert(&screenshots, &take_screenshot(output)->link);
         }
     } else {
+        bool output_found = false;
         wl_list_for_each(output, &wayland.outputs, link) {
-            bool output_found = false;
             if (strcmp(output->name, config.output) == 0) {
                 wl_list_insert(&screenshots, &take_screenshot(output)->link);
                 output_found = true;
                 break;
             }
-            if (!output_found) {
-                critical("output %s not found\n", config.output);
-                exit_status = 1;
-                goto cleanup;
-            }
+        }
+	if (!output_found) {
+            critical("output %s not found\n", config.output);
+            exit_status = 1;
+            goto cleanup;
         }
     }
 
