@@ -14,23 +14,12 @@
 #include "common.h"
 #include "wayland.h"
 #include "window.h"
+#include "config.h"
 #include "xmalloc.h"
 
 #define EPOLL_MAX_EVENTS 16
 
 unsigned int DEBUG_LEVEL = 0;
-
-struct config {
-    char *output;
-    bool fork_child;
-    unsigned int timeout;
-    int child_kill_signal;
-} config = {
-    .output = NULL,
-    .fork_child = false,
-    .timeout = 0,
-    .child_kill_signal = SIGTERM,
-};
 
 void print_help_and_exit(int exit_status) {
     const char *help_string =
