@@ -10,6 +10,7 @@ struct config {
     bool fork_child;
     unsigned int timeout;
     int child_kill_signal;
+    bool cursor;
 };
 
 extern struct config config;

@@ -33,6 +33,7 @@ void print_help_and_exit(int exit_status) {
         "    -t TIMEOUT       kill child (with -c) and exit after TIMEOUT seconds\n"
         "    -c CMD [ARGS...] fork CMD and wait for it to exit\n"
         "                     all arguments after -c are treated as ARGS to CMD\n"
+        "    -C               include cursor in overlay\n"
         "    -v               increase verbosity\n"
         "    -h               print this help message and exit\n";
 
@@ -43,7 +44,7 @@ void print_help_and_exit(int exit_status) {
 void parse_command_line(int *argc, char ***argv) {
     int opt;
 
-    while ((opt = getopt(*argc, *argv, ":o:t:hv")) != -1) {
+    while ((opt = getopt(*argc, *argv, ":o:t:Chv")) != -1) {
         switch (opt) {
         case 'o':
             debug("output name supplied on command line: %s\n", optarg);
@@ -56,6 +57,9 @@ void parse_command_line(int *argc, char ***argv) {
                 die("invalid timeout, expected unsigned int > 0, got %d\n", t);
             }
             config.timeout = t;
+            break;
+        case 'C':
+            config.cursor = true;
             break;
         case 'h':
             print_help_and_exit(0);

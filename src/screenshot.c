@@ -10,6 +10,7 @@
 #include "wayland.h"
 #include "screenshot.h"
 #include "shm.h"
+#include "config.h"
 #include "xmalloc.h"
 
 struct wl_list screenshots;
@@ -56,7 +57,8 @@ struct screenshot *take_screenshot(struct output *output) {
     screenshot->output = output;
 
     struct zwlr_screencopy_frame_v1 *frame =
-        zwlr_screencopy_manager_v1_capture_output(wayland.screencopy_manager, 0,
+        zwlr_screencopy_manager_v1_capture_output(wayland.screencopy_manager,
+                                                  config.cursor,
                                                   screenshot->output->wl_output);
     zwlr_screencopy_frame_v1_add_listener(frame, &frame_listener, screenshot);
 
