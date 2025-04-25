@@ -28,3 +28,8 @@ executable('frzscr',
     install: true
 )
 
+install_data(
+  'frzscr.1',
+  install_dir: join_paths(get_option('mandir'), 'man1'),
+)
+

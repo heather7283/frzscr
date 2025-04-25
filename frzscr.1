@@ -1,0 +1,76 @@
+.TH frzscr 1 "April 2024" "0.1.0" "User Commands"
+.SH NAME
+frzscr \- screen freezing program for wayland
+
+.SH SYNOPSIS
+.B frzscr
+[\fB\-Cvh\fR]
+[\fB\-o\fR \fIOUTPUT\fR]
+[\fB\-t\fR \fITIMEOUT\fR]
+[\fB\-c\fR \fICMD\fR [\fIARGS\fR...]]
+
+.SH DESCRIPTION
+.B frzscr
+creates an illusion of frozen screen by taking a screenshot and displaying it as an overlay. This is particularly useful for taking screenshots.
+
+.SH OPTIONS
+.TP
+\fB\-o\fR \fIOUTPUT\fR
+Only freeze the specified output (e.g. eDP-1).
+.TP
+\fB\-t\fR \fITIMEOUT\fR
+Kill child (when used with \fB\-c\fR) and exit after specified number of seconds.
+.TP
+\fB\-c\fR \fICMD\fR [\fIARGS\fR...]
+Fork the specified command and wait for it to exit. All arguments after \fB\-c\fR are treated as arguments to the command.
+.TP
+\fB\-C\fR
+Include cursor in the overlay.
+.TP
+\fB\-v\fR
+Increase verbosity (can be specified multiple times).
+.TP
+\fB\-h\fR
+Print help message and exit.
+
+.SH EXAMPLES
+Freeze screen for 5 seconds:
+.PP
+.RS
+.nf
+frzscr \-t 5
+.fi
+.RE
+.PP
+Example for taking screenshots (double -c flag is not a typo):
+.PP
+.RS
+.nf
+frzscr \-c sh \-c 'grim \-g "$(slurp)" \- | wl\-copy \-t "image/png"'
+.fi
+.RE
+
+.SH NOTES
+Launching frzscr without arguments will freeze your screen until the process is killed and you might softlock yourself. It's recommended to use either \fB\-t\fR or \fB\-c\fR options.
+.PP
+When combining \fB\-t\fR and \fB\-c\fR options, frzscr will send SIGTERM to the child process group before exiting when timeout expires.
+
+.SH BUGS
+Scaled outputs are currently not supported.
+.br
+Transformed outputs might be wonky sometimes.
+.PP
+Please report bugs to https://github.com/heather7283/frzscr/issues.
+.PP
+When reporting bugs:
+.PD 0
+.IP \(bu 4
+Provide backtrace with symbols if you experience a crash.
+.IP \(bu 4
+Describe steps necessary to reproduce the issue.
+.PD
+
+.SH SEE ALSO
+.BR grim (1),
+.BR slurp (1),
+.BR hyprpicker (1)
