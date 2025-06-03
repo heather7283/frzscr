@@ -6,6 +6,7 @@
 #include <wayland-client.h>
 
 #include "wlr-layer-shell-unstable-v1-client.h"
+#include "fractional-scale-v1-client.h"
 #include "viewporter-client.h"
 
 #include "common.h"
@@ -63,14 +64,50 @@ static const struct wl_surface_listener surface_listener = {
     .preferred_buffer_transform = surface_preferred_buffer_transform,
 };
 
+static void fractional_scale_preferred_scale(void *data,
+                                             struct wp_fractional_scale_v1 *wp_fractional_scale,
+                                             uint32_t scale) {
+    struct window *window = data;
+    printf("\033[31;1mABOBA: fractional scale %u (%f)\033[0m\n", scale, (float)scale / 120.0f);
+
+    wp_viewport_set_destination(window->viewport,
+                                window->screenshot->output->logical_geometry.w,
+                                window->screenshot->output->logical_geometry.h);
+    wl_surface_commit(window->wl_surface);
+    wl_surface_commit(window->wl_surface);
+}
+
+static const struct wp_fractional_scale_v1_listener fractional_scale_listener = {
+    .preferred_scale = fractional_scale_preferred_scale,
+};
+
 struct window *create_window_from_screenshot(struct screenshot *screenshot) {
+<<<<<<< Updated upstream
     struct window *window = xcalloc(1, sizeof(*window));
+=======
+    struct window *window = xcalloc(1, sizeof(struct window));
+    window->screenshot = screenshot;
+>>>>>>> Stashed changes
 
     window->wl_surface = wl_compositor_create_surface(wayland.compositor);
     if (window->wl_surface == NULL) {
         die("couldn't create a wl_surface\n");
     }
     wl_surface_add_listener(window->wl_surface, &surface_listener, window);
+
+    window->fractional_scale =
+        wp_fractional_scale_manager_v1_get_fractional_scale(wayland.fractional_scale_manager,
+                                                            window->wl_surface);
+    if (window->fractional_scale == NULL) {
+        die("could not create fractional scale object\n");
+    }
+    wp_fractional_scale_v1_add_listener(window->fractional_scale,
+                                        &fractional_scale_listener, window);
+
+    window->viewport = wp_viewporter_get_viewport(wayland.viewporter, window->wl_surface);
+    if (window->viewport == NULL) {
+        die("could not create viewport\n");
+    }
 
     int32_t bpp = screenshot->buffer.stride / screenshot->buffer.width;
     int32_t buf_w, buf_h, buf_stride;
@@ -93,17 +130,6 @@ struct window *create_window_from_screenshot(struct screenshot *screenshot) {
         die("UNREACHABLE: wl_output_transform is %d\n", screenshot->output->transform);
     }
     buf_stride = buf_w * bpp;
-
-    window->viewport = wp_viewporter_get_viewport(wayland.viewporter, window->wl_surface);
-    if (window->viewport == NULL) {
-        die("could not create viewport\n");
-    }
-    wp_viewport_set_destination(window->viewport,
-                                screenshot->output->logical_geometry.w,
-                                screenshot->output->logical_geometry.h);
-    wp_viewport_set_source(window->viewport,
-                           wl_fixed_from_int(0), wl_fixed_from_int(0),
-                           wl_fixed_from_int(buf_w), wl_fixed_from_int(buf_h));
 
     window->layer_surface =
         zwlr_layer_shell_v1_get_layer_surface(wayland.layer_shell,
@@ -128,12 +154,23 @@ struct window *create_window_from_screenshot(struct screenshot *screenshot) {
 
     int bytes_per_pixel = screenshot->buffer.stride / screenshot->buffer.width;
 
+<<<<<<< Updated upstream
     debug("creating buffer %ix%i stride %i\n", buf_w, buf_h, buf_stride);
     create_buffer(&window->buffer, screenshot->format, buf_w, buf_h, buf_stride);
 
     rotate_image(window->buffer.data, screenshot->buffer.data,
                  screenshot->buffer.width, screenshot->buffer.height,
                  bytes_per_pixel,
+=======
+    window->wl_buffer = create_buffer(&window->data, screenshot->format,
+                                      screenshot->width, screenshot->height,
+                                      screenshot->stride);
+    window->data_size = screenshot->stride * screenshot->height;
+
+    rotate_image(window->data, screenshot->data,
+                 screenshot->width, screenshot->height,
+                 screenshot->stride / screenshot->width,
+>>>>>>> Stashed changes
                  screenshot->output->transform);
 
     wl_surface_attach(window->wl_surface, window->buffer.wl_buffer, 0, 0);
@@ -145,9 +182,6 @@ struct window *create_window_from_screenshot(struct screenshot *screenshot) {
 void window_cleanup(struct window *window) {
     if (window->layer_surface) {
         zwlr_layer_surface_v1_destroy(window->layer_surface);
-    }
-    if (window->viewport) {
-        wp_viewport_destroy(window->viewport);
     }
     if (window->wl_surface) {
         wl_surface_destroy(window->wl_surface);

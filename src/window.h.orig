@@ -9,7 +9,13 @@ struct window {
     struct buffer buffer;
     struct wl_surface *wl_surface;
     struct zwlr_layer_surface_v1 *layer_surface;
+<<<<<<< Updated upstream
+=======
+    struct wp_fractional_scale_v1 *fractional_scale;
     struct wp_viewport *viewport;
+
+    struct screenshot *screenshot;
+>>>>>>> Stashed changes
 
     struct wl_list link;
 };

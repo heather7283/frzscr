@@ -7,6 +7,7 @@
 #include "wlr-screencopy-unstable-v1-client.h"
 #include "wlr-layer-shell-unstable-v1-client.h"
 #include "xdg-output-unstable-v1-client.h"
+#include "viewporter-client.h"
 
 #include "wayland.h"
 #include "common.h"
@@ -81,7 +82,7 @@ static const struct wl_output_listener output_listener = {
 static void registry_global(void *data, struct wl_registry *registry, uint32_t id,
 	                        const char *interface, uint32_t version) {
     if (strcmp(interface, wl_compositor_interface.name) == 0) {
-        wayland.compositor = wl_registry_bind(registry, id, &wl_compositor_interface, 2);
+        wayland.compositor = wl_registry_bind(registry, id, &wl_compositor_interface, 6);
     } else if (strcmp(interface, wl_shm_interface.name) == 0) {
         wayland.shm = wl_registry_bind(registry, id, &wl_shm_interface, 1);
     } else if (strcmp(interface, wl_output_interface.name) == 0) {
@@ -98,6 +99,8 @@ static void registry_global(void *data, struct wl_registry *registry, uint32_t i
     } else if (strcmp(interface, zxdg_output_manager_v1_interface.name) == 0) {
         wayland.xdg_output_manager = wl_registry_bind(registry, id,
                                                       &zxdg_output_manager_v1_interface, 2);
+    } else if (strcmp(interface, wp_viewporter_interface.name) == 0) {
+        wayland.viewporter = wl_registry_bind(registry, id, &wp_viewporter_interface, 1);
     }
 }
 
@@ -141,6 +144,9 @@ void wayland_init(void) {
     if (wayland.xdg_output_manager == NULL) {
         die("didn't get a xdg_output_manager\n");
     }
+    if (wayland.viewporter == NULL) {
+        die("didn't get a viewporter\n");
+    }
     if (wl_list_empty(&wayland.outputs)) {
         die("no outputs found\n");
     }
@@ -168,6 +174,9 @@ void wayland_cleanup(void) {
         free(output->name);
         wl_list_remove(&output->link);
         free(output);
+    }
+    if (wayland.viewporter) {
+        wp_viewporter_destroy(wayland.viewporter);
     }
     if (wayland.xdg_output_manager) {
         zxdg_output_manager_v1_destroy(wayland.xdg_output_manager);
