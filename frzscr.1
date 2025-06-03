@@ -56,9 +56,7 @@ Launching frzscr without arguments will freeze your screen until the process is 
 When combining \fB\-t\fR and \fB\-c\fR options, frzscr will send SIGTERM to the child process group before exiting when timeout expires.
 
 .SH BUGS
-Scaled outputs are currently not supported.
-.br
-Transformed outputs might be wonky sometimes.
+Broken on hyprland for outputs that are both transformed and scaled. This appears to be a hyprland bug, see https://github.com/hyprwm/Hyprland/discussions/9964
 .PP
 Please report bugs to https://github.com/heather7283/frzscr/issues.
 .PP
