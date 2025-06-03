@@ -45,6 +45,28 @@ struct window *create_window_from_screenshot(struct screenshot *screenshot) {
         die("couldn't create a wl_surface\n");
     }
 
+    int32_t bpp = screenshot->buffer.stride / screenshot->buffer.width;
+    int32_t buf_w, buf_h, buf_stride;
+    switch (screenshot->output->transform) {
+    case WL_OUTPUT_TRANSFORM_NORMAL:
+    case WL_OUTPUT_TRANSFORM_180:
+    case WL_OUTPUT_TRANSFORM_FLIPPED:
+    case WL_OUTPUT_TRANSFORM_FLIPPED_180:
+        buf_w = screenshot->buffer.width;
+        buf_h = screenshot->buffer.height;
+        break;
+    case WL_OUTPUT_TRANSFORM_90:
+    case WL_OUTPUT_TRANSFORM_270:
+    case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+    case WL_OUTPUT_TRANSFORM_FLIPPED_270:
+        buf_w = screenshot->buffer.height;
+        buf_h = screenshot->buffer.width;
+        break;
+    default:
+        die("UNREACHABLE: wl_output_transform is %d\n", screenshot->output->transform);
+    }
+    buf_stride = buf_w * bpp;
+
     window->layer_surface = zwlr_layer_shell_v1_get_layer_surface(
         wayland.layer_shell,
         window->wl_surface,
@@ -69,11 +91,11 @@ struct window *create_window_from_screenshot(struct screenshot *screenshot) {
 
     int bytes_per_pixel = screenshot->buffer.stride / screenshot->buffer.width;
 
-    create_buffer(&window->buffer, screenshot->format,
-                  screenshot->buffer.width, screenshot->buffer.height, screenshot->buffer.stride);
+    debug("creating buffer %ix%i stride %i\n", buf_w, buf_h, buf_stride);
+    create_buffer(&window->buffer, screenshot->format, buf_w, buf_h, buf_stride);
 
     rotate_image(window->buffer.data, screenshot->buffer.data,
-                 window->buffer.width, window->buffer.height,
+                 screenshot->buffer.width, screenshot->buffer.height,
                  bytes_per_pixel,
                  screenshot->output->transform);
 
