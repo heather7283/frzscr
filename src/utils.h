@@ -9,5 +9,7 @@ void rotate_image(void *dest, const void *src, int w, int h,
 
 bool str_to_ulong(const char *str, unsigned long *res);
 
+bool is_valid_signal(int sig);
+
 #endif /* #ifndef UTILS_H */
 

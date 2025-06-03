@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+#include <signal.h>
 
 #include "utils.h"
 #include "common.h"
@@ -127,5 +128,11 @@ bool str_to_ulong(const char *str, unsigned long *res) {
         ERR("failed to convert %s to number: Invalid character %c", str, *endptr);
         return false;
     }
+}
+
+bool is_valid_signal(int sig) {
+    sigset_t set;
+    sigemptyset(&set);
+    return sigaddset(&set, sig) == 0;
 }
 

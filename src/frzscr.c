@@ -34,6 +34,7 @@ void print_help_and_exit(FILE *stream, int exit_status) {
         "command line options:\n"
         "    -o OUTPUT        only freeze this output (eg eDP-1)\n"
         "    -t TIMEOUT       kill child (with -c) and exit after TIMEOUT seconds\n"
+        "    -s SIGNUM        signal that will be sent to child instead of SIGTERM\n"
         "    -c CMD [ARGS...] fork CMD and wait for it to exit\n"
         "                     all arguments after -c are treated as ARGS to CMD\n"
         "    -C               include cursor in overlay\n"
@@ -47,7 +48,7 @@ void print_help_and_exit(FILE *stream, int exit_status) {
 void parse_command_line(int *argc, char ***argv) {
     int opt;
 
-    while ((opt = getopt(*argc, *argv, "o:t:Chv")) != -1) {
+    while ((opt = getopt(*argc, *argv, "o:t:s:Chv")) != -1) {
         switch (opt) {
         case 'o':
             DEBUG("output name supplied on command line: %s", optarg);
@@ -62,6 +63,14 @@ void parse_command_line(int *argc, char ***argv) {
                 DIE("timeout is too big");
             }
             config.timeout = t;
+            break;
+        case 's':
+            DEBUG("signal supplied on command line: %s", optarg);
+            unsigned long sig;
+            if (!str_to_ulong(optarg, &sig) || !is_valid_signal(sig)) {
+                DIE("invalid signal number specified");
+            }
+            config.child_kill_signal = sig;
             break;
         case 'C':
             config.cursor = true;
