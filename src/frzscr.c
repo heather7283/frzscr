@@ -190,12 +190,12 @@ int main(int argc, char **argv) {
     }
 
     /* set up signalfd */
-    if ((signal_fd = signalfd(-1, &mask, 0)) == -1) {
+    if ((signal_fd = signalfd(-1, &mask, SFD_CLOEXEC)) == -1) {
         EDIE("failed to set up signalfd");
     }
 
     /* set up epoll */
-    if ((epoll_fd = epoll_create1(0)) == -1) {
+    if ((epoll_fd = epoll_create1(EPOLL_CLOEXEC)) == -1) {
         EDIE("failed to set up epoll");
     }
 
