@@ -95,10 +95,6 @@ int main(int argc, char **argv) {
     int epoll_fd = -1;
     pid_t child_pid = -1;
 
-    wl_list_init(&wayland.outputs);
-    wl_list_init(&wayland.overlays);
-    wl_list_init(&wayland.screenshots);
-
     int child_argc = -1;
     char **child_argv = NULL;
     for (int i = 1; i < argc; i++) {
