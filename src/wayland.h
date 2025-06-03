@@ -17,7 +17,7 @@ struct wayland {
     struct wp_viewporter *viewporter;
 
     struct wl_list outputs;
-    struct wl_list windows;
+    struct wl_list overlays;
     struct wl_list screenshots;
 };
 extern struct wayland wayland;

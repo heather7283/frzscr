@@ -5,7 +5,7 @@
 
 #include "screenshot.h"
 
-struct window {
+struct overlay {
     struct buffer buffer;
     struct wl_surface *wl_surface;
     struct zwlr_layer_surface_v1 *layer_surface;
@@ -14,8 +14,8 @@ struct window {
     struct wl_list link;
 };
 
-struct window *create_window_from_screenshot(struct screenshot *screenshot);
-void window_cleanup(struct window *window);
+struct overlay *create_overlay_from_screenshot(struct screenshot *screenshot);
+void overlay_cleanup(struct overlay *overlay);
 
 #endif /* #ifndef WINDOW_H */
 

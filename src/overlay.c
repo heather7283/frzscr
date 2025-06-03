@@ -9,7 +9,7 @@
 #include "viewporter-client.h"
 
 #include "common.h"
-#include "window.h"
+#include "overlay.h"
 #include "wayland.h"
 #include "shm.h"
 #include "utils.h"
@@ -23,10 +23,10 @@
 
 static void layer_surface_configure(void *data, struct zwlr_layer_surface_v1 *layer_surface,
                                     uint32_t serial, uint32_t width, uint32_t height) {
-    struct window *window = data;
+    struct overlay *overlay = data;
 
-    zwlr_layer_surface_v1_ack_configure(window->layer_surface, serial);
-    wl_surface_commit(window->wl_surface);
+    zwlr_layer_surface_v1_ack_configure(overlay->layer_surface, serial);
+    wl_surface_commit(overlay->wl_surface);
 }
 
 static void layer_surface_closed(void *data, struct zwlr_layer_surface_v1 *layer_surface) {
@@ -63,14 +63,14 @@ static const struct wl_surface_listener surface_listener = {
     .preferred_buffer_transform = surface_preferred_buffer_transform,
 };
 
-struct window *create_window_from_screenshot(struct screenshot *screenshot) {
-    struct window *window = xcalloc(1, sizeof(*window));
+struct overlay *create_overlay_from_screenshot(struct screenshot *screenshot) {
+    struct overlay *overlay = xcalloc(1, sizeof(*overlay));
 
-    window->wl_surface = wl_compositor_create_surface(wayland.compositor);
-    if (window->wl_surface == NULL) {
+    overlay->wl_surface = wl_compositor_create_surface(wayland.compositor);
+    if (overlay->wl_surface == NULL) {
         die("couldn't create a wl_surface\n");
     }
-    wl_surface_add_listener(window->wl_surface, &surface_listener, window);
+    wl_surface_add_listener(overlay->wl_surface, &surface_listener, overlay);
 
     int32_t bpp = screenshot->buffer.stride / screenshot->buffer.width;
     int32_t buf_w, buf_h, buf_stride;
@@ -94,73 +94,73 @@ struct window *create_window_from_screenshot(struct screenshot *screenshot) {
     }
     buf_stride = buf_w * bpp;
 
-    window->viewport = wp_viewporter_get_viewport(wayland.viewporter, window->wl_surface);
-    if (window->viewport == NULL) {
+    overlay->viewport = wp_viewporter_get_viewport(wayland.viewporter, overlay->wl_surface);
+    if (overlay->viewport == NULL) {
         die("could not create viewport\n");
     }
-    wp_viewport_set_destination(window->viewport,
+    wp_viewport_set_destination(overlay->viewport,
                                 screenshot->output->logical_geometry.w,
                                 screenshot->output->logical_geometry.h);
-    wp_viewport_set_source(window->viewport,
+    wp_viewport_set_source(overlay->viewport,
                            wl_fixed_from_int(0), wl_fixed_from_int(0),
                            wl_fixed_from_int(buf_w), wl_fixed_from_int(buf_h));
 
-    window->layer_surface =
+    overlay->layer_surface =
         zwlr_layer_shell_v1_get_layer_surface(wayland.layer_shell,
-                                              window->wl_surface,
+                                              overlay->wl_surface,
                                               screenshot->output->wl_output,
                                               ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY,
                                               "frzscr");
-    if (window->layer_surface == NULL) {
+    if (overlay->layer_surface == NULL) {
         die("couldn't create a zwlr_layer_surface\n");
     }
-    zwlr_layer_surface_v1_add_listener(window->layer_surface, &layer_surface_listener, window);
+    zwlr_layer_surface_v1_add_listener(overlay->layer_surface, &layer_surface_listener, overlay);
 
     int32_t output_w = screenshot->output->logical_geometry.w;
     int32_t output_h = screenshot->output->logical_geometry.h;
 
-    zwlr_layer_surface_v1_set_size(window->layer_surface, output_w, output_h);
-    zwlr_layer_surface_v1_set_anchor(window->layer_surface, ANCHOR_ALL);
-    zwlr_layer_surface_v1_set_exclusive_zone(window->layer_surface, -1);
+    zwlr_layer_surface_v1_set_size(overlay->layer_surface, output_w, output_h);
+    zwlr_layer_surface_v1_set_anchor(overlay->layer_surface, ANCHOR_ALL);
+    zwlr_layer_surface_v1_set_exclusive_zone(overlay->layer_surface, -1);
 
-    wl_surface_commit(window->wl_surface);
+    wl_surface_commit(overlay->wl_surface);
     wl_display_roundtrip(wayland.display);
 
     int bytes_per_pixel = screenshot->buffer.stride / screenshot->buffer.width;
 
     debug("creating buffer %ix%i stride %i\n", buf_w, buf_h, buf_stride);
-    create_buffer(&window->buffer, screenshot->format, buf_w, buf_h, buf_stride);
+    create_buffer(&overlay->buffer, screenshot->format, buf_w, buf_h, buf_stride);
 
-    rotate_image(window->buffer.data, screenshot->buffer.data,
+    rotate_image(overlay->buffer.data, screenshot->buffer.data,
                  screenshot->buffer.width, screenshot->buffer.height,
                  bytes_per_pixel,
                  screenshot->output->transform);
 
-    wl_surface_attach(window->wl_surface, window->buffer.wl_buffer, 0, 0);
-    wl_surface_commit(window->wl_surface);
+    wl_surface_attach(overlay->wl_surface, overlay->buffer.wl_buffer, 0, 0);
+    wl_surface_commit(overlay->wl_surface);
 
-    return window;
+    return overlay;
 }
 
-void window_cleanup(struct window *window) {
-    if (window->layer_surface) {
-        zwlr_layer_surface_v1_destroy(window->layer_surface);
+void overlay_cleanup(struct overlay *overlay) {
+    if (overlay->layer_surface) {
+        zwlr_layer_surface_v1_destroy(overlay->layer_surface);
     }
-    if (window->viewport) {
-        wp_viewport_destroy(window->viewport);
+    if (overlay->viewport) {
+        wp_viewport_destroy(overlay->viewport);
     }
-    if (window->wl_surface) {
-        wl_surface_destroy(window->wl_surface);
+    if (overlay->wl_surface) {
+        wl_surface_destroy(overlay->wl_surface);
     }
-    if (window->buffer.wl_buffer) {
-        wl_buffer_destroy(window->buffer.wl_buffer);
+    if (overlay->buffer.wl_buffer) {
+        wl_buffer_destroy(overlay->buffer.wl_buffer);
     }
-    if (window->buffer.data != NULL) {
-        if (munmap(window->buffer.data, window->buffer.stride * window->buffer.height) < 0) {
+    if (overlay->buffer.data != NULL) {
+        if (munmap(overlay->buffer.data, overlay->buffer.stride * overlay->buffer.height) < 0) {
             warn("munmap() failed during cleanup: %s\n", strerror(errno));
         }
     }
-    wl_list_remove(&window->link);
-    free(window);
+    wl_list_remove(&overlay->link);
+    free(overlay);
 }
 

@@ -13,7 +13,7 @@
 #include "screenshot.h"
 #include "common.h"
 #include "wayland.h"
-#include "window.h"
+#include "overlay.h"
 #include "config.h"
 #include "xmalloc.h"
 
@@ -88,7 +88,7 @@ int main(int argc, char **argv) {
     pid_t child_pid = -1;
 
     wl_list_init(&wayland.outputs);
-    wl_list_init(&wayland.windows);
+    wl_list_init(&wayland.overlays);
     wl_list_init(&wayland.screenshots);
 
     int child_argc = -1;
@@ -144,7 +144,7 @@ int main(int argc, char **argv) {
 
     struct screenshot *screenshot, *screenshot_tmp;
     wl_list_for_each(screenshot, &wayland.screenshots, link) {
-        wl_list_insert(&wayland.windows, &create_window_from_screenshot(screenshot)->link);
+        wl_list_insert(&wayland.overlays, &create_overlay_from_screenshot(screenshot)->link);
     }
 
     wl_display_roundtrip(wayland.display);
@@ -291,9 +291,9 @@ cleanup:
         screenshot_cleanup(screenshot);
     }
 
-    struct window *window, *window_tmp;
-    wl_list_for_each_safe(window, window_tmp, &wayland.windows, link) {
-        window_cleanup(window);
+    struct overlay *overlay, *overlay_tmp;
+    wl_list_for_each_safe(overlay, overlay_tmp, &wayland.overlays, link) {
+        overlay_cleanup(overlay);
     }
 
     wayland_cleanup();

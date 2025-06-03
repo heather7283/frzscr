@@ -17,7 +17,7 @@ subdir('protocols')
 executable('frzscr',
     'src/frzscr.c',
     'src/wayland.c',
-    'src/window.c',
+    'src/overlay.c',
     'src/shm.c',
     'src/screenshot.c',
     'src/utils.c',
