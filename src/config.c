@@ -1,3 +1,5 @@
+#include <signal.h>
+
 #include "config.h"
 
 struct config config = {

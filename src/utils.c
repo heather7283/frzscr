@@ -20,11 +20,9 @@ void rotate_image(void *dest, const void *src, int w, int h,
                 new_x = h - 1 - y;
                 new_y = x;
 
-                memcpy(
-                    d + (new_y * h + new_x) * bytes_per_pixel,
-                    s + (y * w + x) * bytes_per_pixel,
-                    bytes_per_pixel
-                );
+                memcpy(d + (new_y * h + new_x) * bytes_per_pixel,
+                       s + (y * w + x) * bytes_per_pixel,
+                       bytes_per_pixel);
             }
         }
         break;
@@ -35,11 +33,9 @@ void rotate_image(void *dest, const void *src, int w, int h,
                 new_x = w - 1 - x;
                 new_y = h - 1 - y;
 
-                memcpy(
-                    d + (new_y * w + new_x) * bytes_per_pixel,
-                    s + (y * w + x) * bytes_per_pixel,
-                    bytes_per_pixel
-                );
+                memcpy(d + (new_y * w + new_x) * bytes_per_pixel,
+                       s + (y * w + x) * bytes_per_pixel,
+                       bytes_per_pixel);
             }
         }
         break;
@@ -50,11 +46,9 @@ void rotate_image(void *dest, const void *src, int w, int h,
                 new_x = y;
                 new_y = w - 1 - x;
 
-                memcpy(
-                    d + (new_y * h + new_x) * bytes_per_pixel,
-                    s + (y * w + x) * bytes_per_pixel,
-                    bytes_per_pixel
-                );
+                memcpy(d + (new_y * h + new_x) * bytes_per_pixel,
+                       s + (y * w + x) * bytes_per_pixel,
+                       bytes_per_pixel);
             }
         }
         break;
@@ -65,11 +59,9 @@ void rotate_image(void *dest, const void *src, int w, int h,
                 new_x = w - 1 - x;
                 new_y = y;
 
-                memcpy(
-                    d + (new_y * w + new_x) * bytes_per_pixel,
-                    s + (y * w + x) * bytes_per_pixel,
-                    bytes_per_pixel
-                );
+                memcpy(d + (new_y * w + new_x) * bytes_per_pixel,
+                       s + (y * w + x) * bytes_per_pixel,
+                       bytes_per_pixel);
             }
         }
         break;
@@ -80,11 +72,9 @@ void rotate_image(void *dest, const void *src, int w, int h,
                 new_x = y;
                 new_y = x;
 
-                memcpy(
-                    d + (new_y * h + new_x) * bytes_per_pixel,
-                    s + (y * w + x) * bytes_per_pixel,
-                    bytes_per_pixel
-                );
+                memcpy(d + (new_y * h + new_x) * bytes_per_pixel,
+                       s + (y * w + x) * bytes_per_pixel,
+                       bytes_per_pixel);
             }
         }
         break;
@@ -95,11 +85,9 @@ void rotate_image(void *dest, const void *src, int w, int h,
                 new_x = x;
                 new_y = h - 1 - y;
 
-                memcpy(
-                    d + (new_y * w + new_x) * bytes_per_pixel,
-                    s + (y * w + x) * bytes_per_pixel,
-                    bytes_per_pixel
-                );
+                memcpy(d + (new_y * w + new_x) * bytes_per_pixel,
+                       s + (y * w + x) * bytes_per_pixel,
+                       bytes_per_pixel);
             }
         }
         break;
@@ -110,11 +98,9 @@ void rotate_image(void *dest, const void *src, int w, int h,
                 new_x = h - 1 - y;
                 new_y = w - 1 - x;
 
-                memcpy(
-                    d + (new_y * h + new_x) * bytes_per_pixel,
-                    s + (y * w + x) * bytes_per_pixel,
-                    bytes_per_pixel
-                );
+                memcpy(d + (new_y * h + new_x) * bytes_per_pixel,
+                       s + (y * w + x) * bytes_per_pixel,
+                       bytes_per_pixel);
             }
         }
         break;

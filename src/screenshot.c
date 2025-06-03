@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
@@ -24,7 +25,8 @@ static void frame_buffer_handler(void *data, struct zwlr_screencopy_frame_v1 *fr
     zwlr_screencopy_frame_v1_copy(frame, sshot->buffer.wl_buffer);
 }
 
-static void frame_flags_handler(void *data, struct zwlr_screencopy_frame_v1 *frame, uint32_t flags) {
+static void frame_flags_handler(void *data,
+                                struct zwlr_screencopy_frame_v1 *frame, uint32_t flags) {
     struct screenshot *sshot = data;
 
     sshot->flags = flags;
@@ -41,7 +43,7 @@ static void frame_ready_handler(void *data, struct zwlr_screencopy_frame_v1 *fra
 static void frame_failed_handler(void *data, struct zwlr_screencopy_frame_v1 *frame) {
     struct screenshot *sshot = data;
 
-    DIE("failed to capture screenshot\n");
+    DIE("failed to capture screenshot");
 }
 
 static const struct zwlr_screencopy_frame_v1_listener frame_listener = {
@@ -64,10 +66,10 @@ struct screenshot *take_screenshot(struct output *output) {
     wl_display_roundtrip(wayland.display);
     wl_display_dispatch(wayland.display);
     if (!screenshot->ready) {
-        DIE("screenshot not ready after roundrip and dispatch (wtf)\n");
+        DIE("screenshot not ready after roundrip and dispatch (wtf)");
     }
 
-    DEBUG("captured sshot of %s (logical %ix%i) size %ix%i stride %i\n",
+    DEBUG("captured sshot of %s (logical %ix%i) size %ix%i stride %i",
           screenshot->output->name,
           screenshot->output->logical_geometry.w, screenshot->output->logical_geometry.h,
           screenshot->buffer.width, screenshot->buffer.height, screenshot->buffer.stride);
@@ -79,7 +81,7 @@ void screenshot_cleanup(struct screenshot *screenshot) {
     wl_buffer_destroy(screenshot->buffer.wl_buffer);
     if (munmap(screenshot->buffer.data,
                screenshot->buffer.stride * screenshot->buffer.height) < 0) {
-        WARN("munmap() failed during cleanup: %s\n", strerror(errno));
+        EWARN("munmap() failed during cleanup");
     }
     wl_list_remove(&screenshot->link);
     free(screenshot);

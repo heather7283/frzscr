@@ -1,4 +1,5 @@
 #define _GNU_SOURCE
+#include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
 #include <unistd.h>
@@ -22,16 +23,16 @@ int create_buffer(struct buffer *buffer, enum wl_shm_format format,
     /* non-portable my ass. musl implements it and no one uses wayland on bsd */
 	int fd = memfd_create("frzscr-wayland-shm", MFD_CLOEXEC);
 	if (fd < 0) {
-        DIE("failed to crate memfd: %s\n", strerror(errno));
+        EDIE("failed to crate memfd");
     }
 
     if (posix_fallocate(fd, 0, size) < 0) {
-        DIE("posix_fallocate() failed: %s\n", strerror(errno));
+        EDIE("posix_fallocate() failed");
     };
 
     buffer->data = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
     if (buffer->data == MAP_FAILED) {
-        DIE("mmap failed: %s\n", strerror(errno));
+        EDIE("mmap failed");
     }
 
     struct wl_shm_pool *pool = wl_shm_create_pool(wayland.shm, fd, size);

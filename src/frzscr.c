@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <signal.h>
 #include <stdlib.h>
 #include <string.h>
@@ -19,9 +20,9 @@
 
 #define EPOLL_MAX_EVENTS 16
 
-unsigned int DEBUG_LEVEL = 0;
+int log_enable_debug = 0;
 
-void print_help_and_exit(int exit_status) {
+void print_help_and_exit(FILE *stream, int exit_status) {
     const char *help_string =
         "frzscr - freeze screen\n"
         "\n"
@@ -37,24 +38,24 @@ void print_help_and_exit(int exit_status) {
         "    -v               increase verbosity\n"
         "    -h               print this help message and exit\n";
 
-    fputs(help_string, stderr);
+    fputs(help_string, stream);
     exit(exit_status);
 }
 
 void parse_command_line(int *argc, char ***argv) {
     int opt;
 
-    while ((opt = getopt(*argc, *argv, ":o:t:Chv")) != -1) {
+    while ((opt = getopt(*argc, *argv, "o:t:Chv")) != -1) {
         switch (opt) {
         case 'o':
-            DEBUG("output name supplied on command line: %s\n", optarg);
+            DEBUG("output name supplied on command line: %s", optarg);
             config.output = xstrdup(optarg);
             break;
         case 't':
-            DEBUG("timeout supplied on command line: %s\n", optarg);
+            DEBUG("timeout supplied on command line: %s", optarg);
             int t = atoi(optarg);
             if (t < 1) {
-                DIE("invalid timeout, expected unsigned int > 0, got %d\n", t);
+                DIE("invalid timeout, expected unsigned int > 0, got %d", t);
             }
             config.timeout = t;
             break;
@@ -62,21 +63,15 @@ void parse_command_line(int *argc, char ***argv) {
             config.cursor = true;
             break;
         case 'h':
-            print_help_and_exit(0);
+            print_help_and_exit(stdout, 0);
             break;
         case 'v':
-            DEBUG_LEVEL += 1;
+            log_enable_debug = 1;
             break;
         case '?':
-            CRIT("unknown option: %c\n", optopt);
-            print_help_and_exit(1);
-            break;
-        case ':':
-            CRIT("missing arg for %c\n", optopt);
-            print_help_and_exit(1);
-            break;
         default:
-            DIE("unspecified error while parsing command line options\n");
+            print_help_and_exit(stderr, 1);
+            break;
         }
     }
 }
@@ -104,18 +99,18 @@ int main(int argc, char **argv) {
 
     parse_command_line(&argc, &argv);
 
-    DEBUG("parent args (argc = %d):\n", argc);
+    DEBUG("parent args (argc = %d):", argc);
     for (int i = 0; i < argc; i++) {
-        DEBUG("argv[%d]: %s\n", i, argv[i]);
+        DEBUG("argv[%d]: %s", i, argv[i]);
     }
 
     if (config.fork_child) {
         if (child_argc < 1) {
-            DIE("empty child command\n");
+            DIE("empty child command");
         }
-        DEBUG("child args (argc = %d):\n", child_argc);
+        DEBUG("child args (argc = %d):", child_argc);
         for (int i = 0; i < child_argc; i++) {
-            DEBUG("argv[%d]: %s\n", i, child_argv[i]);
+            DEBUG("argv[%d]: %s", i, child_argv[i]);
         }
     }
 
@@ -135,10 +130,8 @@ int main(int argc, char **argv) {
                 break;
             }
         }
-	if (!output_found) {
-            CRIT("output %s not found\n", config.output);
-            exit_status = 1;
-            goto cleanup;
+        if (!output_found) {
+            DIE("output %s not found", config.output);
         }
     }
 
@@ -153,16 +146,14 @@ int main(int argc, char **argv) {
         child_pid = fork();
         switch (child_pid) {
         case -1:
-            CRIT("fork() failed: %s\n", strerror(errno));
-            exit_status = 1;
-            goto cleanup;
+            EDIE("fork() failed");
         case 0:
             // child
             if (setpgid(0, 0) < 0) {
-                WARN("setpgid failed: %s, might fail to kill everyone", strerror(errno));
+                EWARN("setpgid failed, might fail to kill all children");
             }
             execvp(child_argv[0], child_argv);
-            DIE("execvp() failed: %s\n", strerror(errno));
+            EDIE("execvp() failed");
         default:
             // parent, just continue
             break;
@@ -170,7 +161,7 @@ int main(int argc, char **argv) {
     }
 
     if (config.timeout > 0) {
-        DEBUG("setting alarm for %d seconds\n", config.timeout);
+        DEBUG("setting alarm for %d seconds", config.timeout);
         alarm(config.timeout);
     }
 
@@ -182,36 +173,31 @@ int main(int argc, char **argv) {
     sigaddset(&mask, SIGCHLD);
     sigaddset(&mask, SIGALRM);
     if (sigprocmask(SIG_BLOCK, &mask, NULL) == -1) {
-        CRIT("failed to block signals: %s\n", strerror(errno));
-        goto cleanup;
+        EDIE("failed to block signals");
     }
 
     /* set up signalfd */
     if ((signal_fd = signalfd(-1, &mask, 0)) == -1) {
-        CRIT("failed to set up signalfd: %s\n", strerror(errno));
-        goto cleanup;
+        EDIE("failed to set up signalfd");
     }
 
     /* set up epoll */
     if ((epoll_fd = epoll_create1(0)) == -1) {
-        CRIT("failed to set up epoll: %s\n", strerror(errno));
-        goto cleanup;
+        EDIE("failed to set up epoll");
     }
 
-    struct epoll_event epoll_event;
+    struct epoll_event epoll_event = {0};
     /* add wayland fd to epoll interest list */
     epoll_event.events = EPOLLIN;
     epoll_event.data.fd = wayland.fd;
     if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, wayland.fd, &epoll_event) == -1) {
-        CRIT("failed to add wayland fd to epoll list: %s\n", strerror(errno));
-        goto cleanup;
+        EDIE("failed to add wayland fd to epoll list");
     }
     /* add signal fd to epoll interest list */
     epoll_event.events = EPOLLIN;
     epoll_event.data.fd = signal_fd;
     if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, signal_fd, &epoll_event) == -1) {
-        CRIT("failed to add signal fd to epoll list: %s\n", strerror(errno));
-        goto cleanup;
+        EDIE("failed to add signal fd to epoll list");
     }
 
     int number_fds = -1;
@@ -220,12 +206,10 @@ int main(int argc, char **argv) {
         /* main event loop */
         do {
             number_fds = epoll_wait(epoll_fd, events, EPOLL_MAX_EVENTS, -1);
-        } while (number_fds == -1 && errno == EINTR); /* epoll_wait failing with EINTR is normal */
+        } while (number_fds == -1 && errno == EINTR); /* epoll_wait can fail with EINTR */
 
         if (number_fds == -1) {
-            CRIT("epoll_wait error: %s\n", strerror(errno));
-            exit_status = 1;
-            goto cleanup;
+            EDIE("epoll_wait error");
         }
 
         /* handle events */
@@ -233,42 +217,38 @@ int main(int argc, char **argv) {
             if (events[n].data.fd == wayland.fd) {
                 /* wayland events */
                 if (wl_display_dispatch(wayland.display) == -1) {
-                    CRIT("wl_display_dispatch failed\n");
-                    exit_status = 1;
-                    goto cleanup;
+                    EDIE("wl_display_dispatch failed");
                 }
             } else if (events[n].data.fd == signal_fd) {
                 /* signals */
                 struct signalfd_siginfo siginfo;
                 ssize_t bytes_read = read(signal_fd, &siginfo, sizeof(siginfo));
                 if (bytes_read != sizeof(siginfo)) {
-                    CRIT("failed to read signalfd_siginfo from signal_fd\n");
-                    exit_status = 1;
-                    goto cleanup;
+                    EDIE("failed to read signalfd_siginfo from signal_fd");
                 }
 
                 uint32_t signo = siginfo.ssi_signo;
                 switch (signo) {
                 case SIGINT:
                 case SIGTERM:
-                    DEBUG("received signal %d, exiting\n", signo);
+                    DEBUG("received signal %d, exiting", signo);
                     goto cleanup;
                 case SIGCHLD:
-                    DEBUG("received SIGCHLD\n");
+                    DEBUG("received SIGCHLD");
                     if (child_pid < 0) {
-                        CRIT("but no child was created??? wtf\n");
-                        exit_status = 1;
-                        goto cleanup;
+                        WARN("received SIGCHLD but no child was created, ignoring");
+                        break;
                     }
+
                     int wstatus;
                     waitpid(child_pid, &wstatus, 0);
                     if (WIFEXITED(wstatus)) {
-                        DEBUG("child exited with code %d\n", WEXITSTATUS(wstatus));
+                        DEBUG("child exited with code %d", WEXITSTATUS(wstatus));
                     }
                     child_pid = -1;
                     goto cleanup;
                 case SIGALRM:
-                    DEBUG("received SIGALRM\n");
+                    DEBUG("received SIGALRM");
                     goto cleanup;
                 }
             }
@@ -277,12 +257,12 @@ int main(int argc, char **argv) {
 
 cleanup:
     if (child_pid > 0) {
-        DEBUG("sending signal %d to pgid %d\n", config.child_kill_signal, child_pid);
+        DEBUG("sending signal %d to pgid %d", config.child_kill_signal, child_pid);
         if (kill(-child_pid, config.child_kill_signal) < 0) {
-            WARN("failed to kill process group %d: %s\n", child_pid, strerror(errno));
-            WARN("will try killing child only now\n");
+            EWARN("failed to kill process group %d", child_pid);
+            WARN("will try killing child only now");
             if (kill(child_pid, config.child_kill_signal) < 0) {
-                WARN("failed to kill child with pid %d: %s\n", child_pid, strerror(errno));
+                EWARN("failed to kill child with pid %d", child_pid);
             }
         };
     }

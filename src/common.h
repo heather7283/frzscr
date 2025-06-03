@@ -1,33 +1,26 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#include <stdlib.h> /* exit */
-#include <stdio.h> /* fprintf */
+extern int log_enable_debug;
 
-extern unsigned int DEBUG_LEVEL;
-
-#define DEBUG(__fmt, ...) \
+#define DEBUG(fmt, ...) \
     do { \
-        if (DEBUG_LEVEL >= 1) { \
-            fprintf(stderr, "DEBUG %s:%d: " __fmt, __FILE__, __LINE__, ##__VA_ARGS__); \
+        if (log_enable_debug) { \
+            fprintf(stderr, "DEBUG: "fmt"\n", ##__VA_ARGS__); \
         } \
     } while(0)
 
-#define WARN(__fmt, ...) \
-    do { \
-        fprintf(stderr, "WARN %s:%d: " __fmt, __FILE__, __LINE__, ##__VA_ARGS__); \
-    } while(0)
+#define WARN(fmt, ...) fprintf(stderr, "WARN: "fmt"\n", ##__VA_ARGS__)
+#define EWARN(fmt, ...) fprintf(stderr, "WARN: "fmt": %s\n", ##__VA_ARGS__, strerror(errno))
 
-#define CRIT(__fmt, ...) \
+#define DIE(fmt, ...) \
     do { \
-        fprintf(stderr, "CRITICAL %s:%d: " __fmt, __FILE__, __LINE__, ##__VA_ARGS__); \
-    } while(0)
-
-#define DIE(__fmt, ...) \
+        fprintf(stderr, "ERROR: "fmt"\n", ##__VA_ARGS__); exit(1); \
+    } while (0)
+#define EDIE(fmt, ...) \
     do { \
-        fprintf(stderr, "CRITICAL %s:%d: " __fmt, __FILE__, __LINE__, ##__VA_ARGS__); \
-        exit(1); \
-    } while(0)
+        fprintf(stderr, "ERROR: "fmt": %s\n", ##__VA_ARGS__, strerror(errno)); exit(1); \
+    } while (0)
 
 #endif /* #ifndef COMMON_H */
 

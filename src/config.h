@@ -2,7 +2,6 @@
 #define CONFIG_H
 
 #include <stddef.h>
-#include <signal.h>
 #include <stdbool.h>
 
 struct config {

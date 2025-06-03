@@ -61,6 +61,7 @@ static void output_geometry_handler(void *data, struct wl_output *wl_output,
                                     const char *make, const char *model,
                                     int32_t transform) {
     struct output *output = data;
+
     output->transform = transform;
 }
 
@@ -116,13 +117,13 @@ static const struct wl_registry_listener registry_listener = {
 void wayland_init(void) {
     wayland.display = wl_display_connect(NULL);
     if (wayland.display == NULL) {
-        DIE("unable to connect to wayland compositor\n");
+        DIE("unable to connect to wayland compositor");
     }
     wayland.fd = wl_display_get_fd(wayland.display);
 
     wayland.registry = wl_display_get_registry(wayland.display);
     if (wayland.registry == NULL) {
-        DIE("registry is NULL\n");
+        DIE("registry is NULL");
     }
     wl_registry_add_listener(wayland.registry, &registry_listener, NULL);
 
@@ -130,25 +131,25 @@ void wayland_init(void) {
     wl_display_roundtrip(wayland.display);
 
     if (wayland.compositor == NULL) {
-        DIE("didn't get a wl_compositor\n");
+        DIE("didn't get a wl_compositor");
     }
     if (wayland.shm == NULL) {
-        DIE("didn't get a wl_shm\n");
+        DIE("didn't get a wl_shm");
     }
     if (wayland.screencopy_manager == NULL) {
-        DIE("didn't get zwlr_screencopy_manager_v1\n");
+        DIE("didn't get zwlr_screencopy_manager_v1");
     }
     if (wayland.layer_shell == NULL) {
-        DIE("didn't get a zwlr_layer_shell_v1\n");
+        DIE("didn't get a zwlr_layer_shell_v1");
     }
     if (wayland.xdg_output_manager == NULL) {
-        DIE("didn't get a xdg_output_manager\n");
+        DIE("didn't get a xdg_output_manager");
     }
     if (wayland.viewporter == NULL) {
-        DIE("didn't get a viewporter\n");
+        DIE("didn't get a viewporter");
     }
     if (wl_list_empty(&wayland.outputs)) {
-        DIE("no outputs found\n");
+        DIE("no outputs found");
     }
 
     struct output *output;
@@ -158,7 +159,7 @@ void wayland_init(void) {
         zxdg_output_v1_add_listener(output->xdg_output, &xdg_output_listener, output);
     }
     if (wl_display_roundtrip(wayland.display) < 0) {
-        DIE("wl_display_roundtrip() failed\n");
+        DIE("wl_display_roundtrip() failed");
     }
 }
 

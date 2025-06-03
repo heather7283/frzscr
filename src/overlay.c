@@ -30,7 +30,7 @@ static void layer_surface_configure(void *data, struct zwlr_layer_surface_v1 *la
 }
 
 static void layer_surface_closed(void *data, struct zwlr_layer_surface_v1 *layer_surface) {
-    DIE("layer_surface closed unexpectedly\n");
+    DIE("layer_surface closed unexpectedly");
 }
 
 static const struct zwlr_layer_surface_v1_listener layer_surface_listener = {
@@ -38,20 +38,20 @@ static const struct zwlr_layer_surface_v1_listener layer_surface_listener = {
     layer_surface_closed
 };
 
-static void surface_enter(void *data, struct wl_surface *wl_surface, struct wl_output *wl_output) {
+static void surface_enter(void *data, struct wl_surface *surface, struct wl_output *output) {
     // no-op
 }
 
-static void surface_leave(void *data, struct wl_surface *wl_surface, struct wl_output *wl_output) {
+static void surface_leave(void *data, struct wl_surface *surface, struct wl_output *output) {
     // no-op
 }
 
-static void surface_preferred_buffer_scale(void *data, struct wl_surface *wl_surface,
+static void surface_preferred_buffer_scale(void *data, struct wl_surface *surface,
                                            int32_t factor) {
     // no-op
 }
 
-static void surface_preferred_buffer_transform(void *data, struct wl_surface *wl_surface,
+static void surface_preferred_buffer_transform(void *data, struct wl_surface *surface,
                                                uint32_t transform) {
     // no-op
 }
@@ -68,7 +68,7 @@ struct overlay *create_overlay_from_screenshot(struct screenshot *screenshot) {
 
     overlay->wl_surface = wl_compositor_create_surface(wayland.compositor);
     if (overlay->wl_surface == NULL) {
-        DIE("couldn't create a wl_surface\n");
+        DIE("couldn't create a wl_surface");
     }
     wl_surface_add_listener(overlay->wl_surface, &surface_listener, overlay);
 
@@ -90,13 +90,13 @@ struct overlay *create_overlay_from_screenshot(struct screenshot *screenshot) {
         buf_h = screenshot->buffer.width;
         break;
     default:
-        DIE("UNREACHABLE: wl_output_transform is %d\n", screenshot->output->transform);
+        DIE("UNREACHABLE: wl_output_transform is %d", screenshot->output->transform);
     }
     buf_stride = buf_w * bpp;
 
     overlay->viewport = wp_viewporter_get_viewport(wayland.viewporter, overlay->wl_surface);
     if (overlay->viewport == NULL) {
-        DIE("could not create viewport\n");
+        DIE("could not create viewport");
     }
     wp_viewport_set_destination(overlay->viewport,
                                 screenshot->output->logical_geometry.w,
@@ -112,7 +112,7 @@ struct overlay *create_overlay_from_screenshot(struct screenshot *screenshot) {
                                               ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY,
                                               "frzscr");
     if (overlay->layer_surface == NULL) {
-        DIE("couldn't create a zwlr_layer_surface\n");
+        DIE("couldn't create a zwlr_layer_surface");
     }
     zwlr_layer_surface_v1_add_listener(overlay->layer_surface, &layer_surface_listener, overlay);
 
@@ -128,7 +128,7 @@ struct overlay *create_overlay_from_screenshot(struct screenshot *screenshot) {
 
     int bytes_per_pixel = screenshot->buffer.stride / screenshot->buffer.width;
 
-    DEBUG("creating buffer %ix%i stride %i\n", buf_w, buf_h, buf_stride);
+    DEBUG("creating buffer %ix%i stride %i", buf_w, buf_h, buf_stride);
     create_buffer(&overlay->buffer, screenshot->format, buf_w, buf_h, buf_stride);
 
     rotate_image(overlay->buffer.data, screenshot->buffer.data,
@@ -157,7 +157,7 @@ void overlay_cleanup(struct overlay *overlay) {
     }
     if (overlay->buffer.data != NULL) {
         if (munmap(overlay->buffer.data, overlay->buffer.stride * overlay->buffer.height) < 0) {
-            WARN("munmap() failed during cleanup: %s\n", strerror(errno));
+            EWARN("munmap() failed during cleanup");
         }
     }
     wl_list_remove(&overlay->link);
