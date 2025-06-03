@@ -82,27 +82,31 @@ static const struct wl_output_listener output_listener = {
 
 static void registry_global(void *data, struct wl_registry *registry, uint32_t id,
 	                        const char *interface, uint32_t version) {
-    if (strcmp(interface, wl_compositor_interface.name) == 0) {
-        wayland.compositor = wl_registry_bind(registry, id, &wl_compositor_interface, 6);
-    } else if (strcmp(interface, wl_shm_interface.name) == 0) {
-        wayland.shm = wl_registry_bind(registry, id, &wl_shm_interface, 1);
-    } else if (strcmp(interface, wl_output_interface.name) == 0) {
-        struct output *output = xcalloc(1, sizeof(struct output));
+    #define MATCH_INTERFACE(i) STREQ(interface, i.name)
+    #define BIND_INTERFACE(i, ver) (wl_registry_bind(registry, id, &i, ver))
+
+    if (MATCH_INTERFACE(wl_compositor_interface)) {
+        wayland.compositor = BIND_INTERFACE(wl_compositor_interface, 6);
+    } else if (MATCH_INTERFACE(wl_shm_interface)) {
+        wayland.shm = BIND_INTERFACE(wl_shm_interface, 1);
+    } else if (MATCH_INTERFACE(wl_output_interface)) {
+        struct output *output = xcalloc(1, sizeof(*output));
 
         wl_list_insert(&wayland.outputs, &output->link);
-        output->wl_output = wl_registry_bind(registry, id, &wl_output_interface, 1);
+        output->wl_output = BIND_INTERFACE(wl_output_interface, 1);
         wl_output_add_listener(output->wl_output, &output_listener, output);
-    } else if (strcmp(interface, zwlr_layer_shell_v1_interface.name) == 0) {
-        wayland.layer_shell = wl_registry_bind(registry, id, &zwlr_layer_shell_v1_interface, 1);
-    } else if (strcmp(interface, zwlr_screencopy_manager_v1_interface.name) == 0) {
-        wayland.screencopy_manager = wl_registry_bind(registry, id,
-                                                      &zwlr_screencopy_manager_v1_interface, 1);
-    } else if (strcmp(interface, zxdg_output_manager_v1_interface.name) == 0) {
-        wayland.xdg_output_manager = wl_registry_bind(registry, id,
-                                                      &zxdg_output_manager_v1_interface, 2);
-    } else if (strcmp(interface, wp_viewporter_interface.name) == 0) {
-        wayland.viewporter = wl_registry_bind(registry, id, &wp_viewporter_interface, 1);
+    } else if (MATCH_INTERFACE(zwlr_layer_shell_v1_interface)) {
+        wayland.layer_shell = BIND_INTERFACE(zwlr_layer_shell_v1_interface, 1);
+    } else if (MATCH_INTERFACE(zwlr_screencopy_manager_v1_interface)) {
+        wayland.screencopy_manager = BIND_INTERFACE(zwlr_screencopy_manager_v1_interface, 1);
+    } else if (MATCH_INTERFACE(zxdg_output_manager_v1_interface)) {
+        wayland.xdg_output_manager = BIND_INTERFACE(zxdg_output_manager_v1_interface, 2);
+    } else if (MATCH_INTERFACE(wp_viewporter_interface)) {
+        wayland.viewporter = BIND_INTERFACE(wp_viewporter_interface, 1);
     }
+
+    #undef MATCH_INTERFACE
+    #undef BIND_INTERFACE
 }
 
 static void registry_global_remove(void *data, struct wl_registry *registry, uint32_t id) {

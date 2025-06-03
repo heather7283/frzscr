@@ -22,5 +22,7 @@ extern int log_enable_debug;
         fprintf(stderr, "ERROR: "fmt": %s\n", ##__VA_ARGS__, strerror(errno)); exit(1); \
     } while (0)
 
+#define STREQ(a, b) (strcmp((a), (b)) == 0)
+
 #endif /* #ifndef COMMON_H */
 

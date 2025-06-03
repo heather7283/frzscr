@@ -89,7 +89,7 @@ int main(int argc, char **argv) {
     int child_argc = -1;
     char **child_argv = NULL;
     for (int i = 1; i < argc; i++) {
-        if (strcmp(argv[i], "-c") == 0) {
+        if (STREQ(argv[i], "-c")) {
             config.fork_child = true;
             child_argc = argc - i - 1;
             child_argv = &argv[i + 1];
@@ -124,7 +124,7 @@ int main(int argc, char **argv) {
     } else {
         bool output_found = false;
         wl_list_for_each(output, &wayland.outputs, link) {
-            if (strcmp(output->name, config.output) == 0) {
+            if (STREQ(output->name, config.output)) {
                 wl_list_insert(&wayland.screenshots, &take_screenshot(output)->link);
                 output_found = true;
                 break;
