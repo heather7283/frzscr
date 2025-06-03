@@ -88,8 +88,8 @@ int main(int argc, char **argv) {
     pid_t child_pid = -1;
 
     wl_list_init(&wayland.outputs);
-    wl_list_init(&windows);
-    wl_list_init(&screenshots);
+    wl_list_init(&wayland.windows);
+    wl_list_init(&wayland.screenshots);
 
     int child_argc = -1;
     char **child_argv = NULL;
@@ -124,13 +124,13 @@ int main(int argc, char **argv) {
     struct output *output;
     if (config.output == NULL) {
         wl_list_for_each(output, &wayland.outputs, link) {
-            wl_list_insert(&screenshots, &take_screenshot(output)->link);
+            wl_list_insert(&wayland.screenshots, &take_screenshot(output)->link);
         }
     } else {
         bool output_found = false;
         wl_list_for_each(output, &wayland.outputs, link) {
             if (strcmp(output->name, config.output) == 0) {
-                wl_list_insert(&screenshots, &take_screenshot(output)->link);
+                wl_list_insert(&wayland.screenshots, &take_screenshot(output)->link);
                 output_found = true;
                 break;
             }
@@ -143,8 +143,8 @@ int main(int argc, char **argv) {
     }
 
     struct screenshot *screenshot, *screenshot_tmp;
-    wl_list_for_each(screenshot, &screenshots, link) {
-        wl_list_insert(&windows, &create_window_from_screenshot(screenshot)->link);
+    wl_list_for_each(screenshot, &wayland.screenshots, link) {
+        wl_list_insert(&wayland.windows, &create_window_from_screenshot(screenshot)->link);
     }
 
     wl_display_roundtrip(wayland.display);
@@ -287,12 +287,12 @@ cleanup:
         };
     }
 
-    wl_list_for_each_safe(screenshot, screenshot_tmp, &screenshots, link) {
+    wl_list_for_each_safe(screenshot, screenshot_tmp, &wayland.screenshots, link) {
         screenshot_cleanup(screenshot);
     }
 
     struct window *window, *window_tmp;
-    wl_list_for_each_safe(window, window_tmp, &windows, link) {
+    wl_list_for_each_safe(window, window_tmp, &wayland.windows, link) {
         window_cleanup(window);
     }
 

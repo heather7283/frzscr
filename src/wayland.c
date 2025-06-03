@@ -9,12 +9,10 @@
 #include "xdg-output-unstable-v1-client.h"
 
 #include "wayland.h"
-#include "window.h"
 #include "common.h"
 #include "xmalloc.h"
 
 struct wayland wayland = {0};
-struct window window = {0};
 
 static void xdg_output_logical_position_handler(void *data, struct zxdg_output_v1 *xdg_output,
                                                 int32_t x, int32_t y) {
@@ -35,13 +33,13 @@ static void xdg_output_logical_size_handler(void *data, struct zxdg_output_v1 *x
 static void xdg_output_name_handler(void *data, struct zxdg_output_v1 *xdg_output,
                                     const char *name) {
 	struct output *output = data;
+
 	output->name = xstrdup(name);
 }
 
 static void xdg_output_description_handler(void *data, struct zxdg_output_v1 *xdg_output,
                                            const char *description) {
-	struct output *output = data;
-	output->description = xstrdup(description);
+    // no-op
 }
 
 static void xdg_output_done_handler(void *data, struct zxdg_output_v1 *xdg_output) {
@@ -168,7 +166,6 @@ void wayland_cleanup(void) {
             wl_output_destroy(output->wl_output);
         }
         free(output->name);
-        free(output->description);
         wl_list_remove(&output->link);
         free(output);
     }

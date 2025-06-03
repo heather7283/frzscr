@@ -11,12 +11,21 @@ struct wayland {
     struct wl_compositor *compositor;
     struct wl_shell *shell;
     struct wl_shm *shm;
-    struct wl_list outputs;
     struct zwlr_layer_shell_v1 *layer_shell;
     struct zwlr_screencopy_manager_v1 *screencopy_manager;
     struct zxdg_output_manager_v1 *xdg_output_manager;
+
+    struct wl_list outputs;
+    struct wl_list windows;
+    struct wl_list screenshots;
 };
 extern struct wayland wayland;
+
+struct buffer {
+    struct wl_buffer *wl_buffer;
+    void *data;
+    int32_t width, height, stride;
+};
 
 struct output {
     struct wl_output *wl_output;
@@ -25,7 +34,8 @@ struct output {
         int32_t x, y, w, h;
     } logical_geometry;
     enum wl_output_transform transform;
-    char *name, *description;
+    char *name;
+
     struct wl_list link;
 };
 

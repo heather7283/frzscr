@@ -8,17 +8,15 @@
 #include "wayland.h"
 
 struct screenshot {
-    struct wl_buffer *wl_buffer;
-    void *data;
-    int32_t width, height, stride;
+    struct buffer buffer;
+    struct output *output;
+
     uint32_t flags;
     enum wl_shm_format format;
-    struct output *output;
     bool ready;
+
     struct wl_list link;
 };
-
-extern struct wl_list screenshots;
 
 struct screenshot *take_screenshot(struct output *output);
 void screenshot_cleanup(struct screenshot *screenshot);

@@ -15,19 +15,20 @@
 #include "xmalloc.h"
 
 #define ANCHOR_ALL \
-    (ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP | ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM | \
-    ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT | ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT)
+    ( ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP    \
+    | ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM \
+    | ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT   \
+    | ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT  )
 
-struct wl_list windows;
-
-static void layer_surface_configure(void *data, struct zwlr_layer_surface_v1 *zwlr_layer_surface_v1,
+static void layer_surface_configure(void *data, struct zwlr_layer_surface_v1 *layer_surface,
                                     uint32_t serial, uint32_t width, uint32_t height) {
     struct window *window = data;
+
     zwlr_layer_surface_v1_ack_configure(window->layer_surface, serial);
     wl_surface_commit(window->wl_surface);
 }
 
-static void layer_surface_closed(void *data, struct zwlr_layer_surface_v1 *zwlr_layer_surface_v1) {
+static void layer_surface_closed(void *data, struct zwlr_layer_surface_v1 *layer_surface) {
     die("layer_surface closed unexpectedly\n");
 }
 
@@ -37,7 +38,7 @@ static struct zwlr_layer_surface_v1_listener layer_surface_listener = {
 };
 
 struct window *create_window_from_screenshot(struct screenshot *screenshot) {
-    struct window *window = xcalloc(1, sizeof(struct window));
+    struct window *window = xcalloc(1, sizeof(*window));
 
     window->wl_surface = wl_compositor_create_surface(wayland.compositor);
     if (window->wl_surface == NULL) {
@@ -66,18 +67,17 @@ struct window *create_window_from_screenshot(struct screenshot *screenshot) {
     wl_surface_commit(window->wl_surface);
     wl_display_roundtrip(wayland.display);
 
-    int bytes_per_pixel = screenshot->stride / screenshot->width;
+    int bytes_per_pixel = screenshot->buffer.stride / screenshot->buffer.width;
 
-    window->wl_buffer = create_buffer(&window->data, screenshot->format,
-                                      output_w, output_h, output_w * bytes_per_pixel);
-    window->data_size = output_h * output_w * bytes_per_pixel;
+    create_buffer(&window->buffer, screenshot->format,
+                  screenshot->buffer.width, screenshot->buffer.height, screenshot->buffer.stride);
 
-    rotate_image(window->data, screenshot->data,
-                 screenshot->width, screenshot->height,
+    rotate_image(window->buffer.data, screenshot->buffer.data,
+                 window->buffer.width, window->buffer.height,
                  bytes_per_pixel,
                  screenshot->output->transform);
 
-    wl_surface_attach(window->wl_surface, window->wl_buffer, 0, 0);
+    wl_surface_attach(window->wl_surface, window->buffer.wl_buffer, 0, 0);
     wl_surface_commit(window->wl_surface);
 
     return window;
@@ -90,11 +90,11 @@ void window_cleanup(struct window *window) {
     if (window->wl_surface) {
         wl_surface_destroy(window->wl_surface);
     }
-    if (window->wl_buffer) {
-        wl_buffer_destroy(window->wl_buffer);
+    if (window->buffer.wl_buffer) {
+        wl_buffer_destroy(window->buffer.wl_buffer);
     }
-    if (window->data != NULL) {
-        if (munmap(window->data, window->data_size) < 0) {
+    if (window->buffer.data != NULL) {
+        if (munmap(window->buffer.data, window->buffer.stride * window->buffer.height) < 0) {
             warn("munmap() failed during cleanup: %s\n", strerror(errno));
         }
     }
