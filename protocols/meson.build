@@ -3,7 +3,6 @@ protocols = [
     'wlr-screencopy-unstable-v1',
     'xdg-shell',
     'xdg-output-unstable-v1',
-    'fractional-scale-v1',
     'viewporter'
 ]
 protocol_sources = []
