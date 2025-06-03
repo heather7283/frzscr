@@ -3,10 +3,10 @@
 At the time of writing there's still no sane way to freeze screen on wayland (for screenshots for example) and I saw people use combination of [hyprpicker](https://github.com/hyprwm/hyprpicker) and [slurp](https://github.com/emersion/slurp) which just feels like a crutch so I decided to write this abomination.
 
 ## How it works
-Simple, it just takes a screenshot and then displays this screenshot over your screen to create an illusion of frozen screen. It uses wlr-layer-shell-unstable and wlr-screencopy-unstable so make sure your composter supports them.
+Simple, it just takes a screenshot and then displays this screenshot over your screen to create an illusion of frozen screen. It uses [wlr layer shell](https://wayland.app/protocols/wlr-layer-shell-unstable-v1) and [wlr screencopy](https://wayland.app/protocols/wlr-screencopy-unstable-v1) so make sure your composter supports them.
 
 ## Build
-You need meson and libwayland-client to compile frzscr
+You need meson, wayland-scanner and libwayland-client to compile frzscr
 ```sh
 git clone 'https://github.com/heather7283/frzscr'
 cd frzscr
@@ -28,8 +28,9 @@ build/frzscr -t 5
 build/frzscr -c sh -c 'grim -g "$(slurp)" - | wl-copy -t "image/png"'
 ```
 
-## Thanks (aka references)
+## References
 - [hello-wayland](https://github.com/wmww/hello-wayland) - layer shell example
 - [grim](https://git.sr.ht/~emersion/grim) - screenshot example
 - [1](https://gaultier.github.io/blog/wayland_from_scratch.html#shared-memory-the-frame-buffer), [2](https://jan.newmarch.name/Wayland/SharedMemory/) - shm examples
 - [wayland explorer](https://wayland.app) - protocol docs
+
