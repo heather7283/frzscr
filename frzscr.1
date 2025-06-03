@@ -7,6 +7,7 @@ frzscr \- screen freezing program for wayland
 [\fB\-Cvh\fR]
 [\fB\-o\fR \fIOUTPUT\fR]
 [\fB\-t\fR \fITIMEOUT\fR]
+[\fB\-s\fR \fISIGNUM\fR]
 [\fB\-c\fR \fICMD\fR [\fIARGS\fR...]]
 
 .SH DESCRIPTION
@@ -20,6 +21,9 @@ Only freeze the specified output (e.g. eDP-1).
 .TP
 \fB\-t\fR \fITIMEOUT\fR
 Kill child (when used with \fB\-c\fR) and exit after specified number of seconds.
+.TP
+\fB\-s\fR \fISIGNUM\fR
+Send signal number SIGNUM to child process instead of SIGTERM.
 .TP
 \fB\-c\fR \fICMD\fR [\fIARGS\fR...]
 Fork the specified command and wait for it to exit. All arguments after \fB\-c\fR are treated as arguments to the command.
