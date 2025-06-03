@@ -13,6 +13,9 @@ extern int log_enable_debug;
 #define WARN(fmt, ...) fprintf(stderr, "WARN: "fmt"\n", ##__VA_ARGS__)
 #define EWARN(fmt, ...) fprintf(stderr, "WARN: "fmt": %s\n", ##__VA_ARGS__, strerror(errno))
 
+#define ERR(fmt, ...) fprintf(stderr, "ERROR: "fmt"\n", ##__VA_ARGS__)
+#define EERR(fmt, ...) fprintf(stderr, "ERROR: "fmt": %s\n", ##__VA_ARGS__, strerror(errno))
+
 #define DIE(fmt, ...) \
     do { \
         fprintf(stderr, "ERROR: "fmt"\n", ##__VA_ARGS__); exit(1); \

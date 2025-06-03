@@ -5,8 +5,9 @@
 #include <getopt.h>
 #include <errno.h>
 #include <unistd.h>
-#include <wait.h>
 #include <stdbool.h>
+#include <limits.h>
+#include <sys/wait.h>
 #include <sys/epoll.h>
 #include <sys/signalfd.h>
 #include <wayland-util.h>
@@ -16,6 +17,7 @@
 #include "wayland.h"
 #include "overlay.h"
 #include "config.h"
+#include "utils.h"
 #include "xmalloc.h"
 
 #define EPOLL_MAX_EVENTS 16
@@ -53,9 +55,11 @@ void parse_command_line(int *argc, char ***argv) {
             break;
         case 't':
             DEBUG("timeout supplied on command line: %s", optarg);
-            int t = atoi(optarg);
-            if (t < 1) {
-                DIE("invalid timeout, expected unsigned int > 0, got %d", t);
+            unsigned long t;
+            if (!str_to_ulong(optarg, &t)) {
+                DIE("invalid timeout specified");
+            } else if (t > UINT_MAX) {
+                DIE("timeout is too big");
             }
             config.timeout = t;
             break;

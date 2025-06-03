@@ -1,7 +1,11 @@
+#include <stdlib.h>
+#include <errno.h>
+#include <stdio.h>
 #include <stdint.h>
 #include <string.h>
 
 #include "utils.h"
+#include "common.h"
 
 void rotate_image(void *dest, const void *src, int w, int h,
                   int bytes_per_pixel, enum wl_output_transform transform) {
@@ -104,6 +108,24 @@ void rotate_image(void *dest, const void *src, int w, int h,
             }
         }
         break;
+    }
+}
+
+bool str_to_ulong(const char *str, unsigned long *res) {
+    char *endptr = NULL;
+
+    errno = 0;
+    unsigned long res_tmp = strtoul(str, &endptr, 10);
+
+    if (errno == 0 && *endptr == '\0') {
+        *res = res_tmp;
+        return true;
+    } else if (errno != 0) {
+        EERR("failed to convert %s to number", str);
+        return false;
+    } else {
+        ERR("failed to convert %s to number: Invalid character %c", str, *endptr);
+        return false;
     }
 }
 
