@@ -22,16 +22,16 @@ int create_buffer(struct buffer *buffer, enum wl_shm_format format,
     /* non-portable my ass. musl implements it and no one uses wayland on bsd */
 	int fd = memfd_create("frzscr-wayland-shm", MFD_CLOEXEC);
 	if (fd < 0) {
-        die("failed to crate memfd: %s\n", strerror(errno));
+        DIE("failed to crate memfd: %s\n", strerror(errno));
     }
 
     if (posix_fallocate(fd, 0, size) < 0) {
-        die("posix_fallocate() failed: %s\n", strerror(errno));
+        DIE("posix_fallocate() failed: %s\n", strerror(errno));
     };
 
     buffer->data = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
     if (buffer->data == MAP_FAILED) {
-        die("mmap failed: %s\n", strerror(errno));
+        DIE("mmap failed: %s\n", strerror(errno));
     }
 
     struct wl_shm_pool *pool = wl_shm_create_pool(wayland.shm, fd, size);

@@ -41,7 +41,7 @@ static void frame_ready_handler(void *data, struct zwlr_screencopy_frame_v1 *fra
 static void frame_failed_handler(void *data, struct zwlr_screencopy_frame_v1 *frame) {
     struct screenshot *sshot = data;
 
-    die("failed to capture screenshot\n");
+    DIE("failed to capture screenshot\n");
 }
 
 static const struct zwlr_screencopy_frame_v1_listener frame_listener = {
@@ -64,10 +64,10 @@ struct screenshot *take_screenshot(struct output *output) {
     wl_display_roundtrip(wayland.display);
     wl_display_dispatch(wayland.display);
     if (!screenshot->ready) {
-        die("screenshot not ready after roundrip and dispatch (wtf)\n");
+        DIE("screenshot not ready after roundrip and dispatch (wtf)\n");
     }
 
-    debug("captured sshot of %s (logical %ix%i) size %ix%i stride %i\n",
+    DEBUG("captured sshot of %s (logical %ix%i) size %ix%i stride %i\n",
           screenshot->output->name,
           screenshot->output->logical_geometry.w, screenshot->output->logical_geometry.h,
           screenshot->buffer.width, screenshot->buffer.height, screenshot->buffer.stride);
@@ -79,7 +79,7 @@ void screenshot_cleanup(struct screenshot *screenshot) {
     wl_buffer_destroy(screenshot->buffer.wl_buffer);
     if (munmap(screenshot->buffer.data,
                screenshot->buffer.stride * screenshot->buffer.height) < 0) {
-        warn("munmap() failed during cleanup: %s\n", strerror(errno));
+        WARN("munmap() failed during cleanup: %s\n", strerror(errno));
     }
     wl_list_remove(&screenshot->link);
     free(screenshot);

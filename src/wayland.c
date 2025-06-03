@@ -116,13 +116,13 @@ static const struct wl_registry_listener registry_listener = {
 void wayland_init(void) {
     wayland.display = wl_display_connect(NULL);
     if (wayland.display == NULL) {
-        die("unable to connect to wayland compositor\n");
+        DIE("unable to connect to wayland compositor\n");
     }
     wayland.fd = wl_display_get_fd(wayland.display);
 
     wayland.registry = wl_display_get_registry(wayland.display);
     if (wayland.registry == NULL) {
-        die("registry is NULL\n");
+        DIE("registry is NULL\n");
     }
     wl_registry_add_listener(wayland.registry, &registry_listener, NULL);
 
@@ -130,25 +130,25 @@ void wayland_init(void) {
     wl_display_roundtrip(wayland.display);
 
     if (wayland.compositor == NULL) {
-        die("didn't get a wl_compositor\n");
+        DIE("didn't get a wl_compositor\n");
     }
     if (wayland.shm == NULL) {
-        die("didn't get a wl_shm\n");
+        DIE("didn't get a wl_shm\n");
     }
     if (wayland.screencopy_manager == NULL) {
-        die("didn't get zwlr_screencopy_manager_v1\n");
+        DIE("didn't get zwlr_screencopy_manager_v1\n");
     }
     if (wayland.layer_shell == NULL) {
-        die("didn't get a zwlr_layer_shell_v1\n");
+        DIE("didn't get a zwlr_layer_shell_v1\n");
     }
     if (wayland.xdg_output_manager == NULL) {
-        die("didn't get a xdg_output_manager\n");
+        DIE("didn't get a xdg_output_manager\n");
     }
     if (wayland.viewporter == NULL) {
-        die("didn't get a viewporter\n");
+        DIE("didn't get a viewporter\n");
     }
     if (wl_list_empty(&wayland.outputs)) {
-        die("no outputs found\n");
+        DIE("no outputs found\n");
     }
 
     struct output *output;
@@ -158,7 +158,7 @@ void wayland_init(void) {
         zxdg_output_v1_add_listener(output->xdg_output, &xdg_output_listener, output);
     }
     if (wl_display_roundtrip(wayland.display) < 0) {
-        die("wl_display_roundtrip() failed\n");
+        DIE("wl_display_roundtrip() failed\n");
     }
 }
 
