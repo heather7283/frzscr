@@ -25,21 +25,21 @@
 int log_enable_debug = 0;
 
 void print_help_and_exit(FILE *stream, int exit_status) {
-    const char *help_string =
+    const char help_string[] =
         "frzscr - freeze screen\n"
         "\n"
         "usage:\n"
-        "    frzscr [OPTIONS]\n"
+        "    frzscr [-Cvh] [-o OUTPUT] [-t TIMEOUT] [-s SIGNUM] [-c CMD [ARG]...]\n"
         "\n"
         "command line options:\n"
-        "    -o OUTPUT        only freeze this output (eg eDP-1)\n"
-        "    -t TIMEOUT       kill child (with -c) and exit after TIMEOUT seconds\n"
-        "    -s SIGNUM        signal that will be sent to child instead of SIGTERM\n"
-        "    -c CMD [ARGS...] fork CMD and wait for it to exit\n"
-        "                     all arguments after -c are treated as ARGS to CMD\n"
-        "    -C               include cursor in overlay\n"
-        "    -v               increase verbosity\n"
-        "    -h               print this help message and exit\n";
+        "    -o OUTPUT       only freeze this output (eg eDP-1)\n"
+        "    -t TIMEOUT      kill child (with -c) and exit after TIMEOUT seconds\n"
+        "    -s SIGNUM       signal that will be sent to child instead of SIGTERM\n"
+        "    -c CMD [ARG]... fork CMD and wait for it to exit (terminates option list)\n"
+        "    -C              include cursor in overlay\n"
+        "    -v              enable debug output\n"
+        "    -h              print this help message and exit\n"
+    ;
 
     fputs(help_string, stream);
     exit(exit_status);
