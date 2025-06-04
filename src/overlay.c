@@ -5,8 +5,8 @@
 #include <sys/mman.h>
 #include <wayland-client.h>
 
-#include "wlr-layer-shell-unstable-v1-client.h"
-#include "viewporter-client.h"
+#include "wlr-layer-shell-unstable-v1.h"
+#include "viewporter.h"
 
 #include "common.h"
 #include "overlay.h"

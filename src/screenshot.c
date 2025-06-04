@@ -5,7 +5,7 @@
 #include <sys/mman.h>
 #include <wayland-client.h>
 
-#include "wlr-screencopy-unstable-v1-client.h"
+#include "wlr-screencopy-unstable-v1.h"
 
 #include "common.h"
 #include "wayland.h"

@@ -4,10 +4,10 @@
 #include <wayland-client.h>
 #include <wayland-util.h>
 
-#include "wlr-screencopy-unstable-v1-client.h"
-#include "wlr-layer-shell-unstable-v1-client.h"
-#include "xdg-output-unstable-v1-client.h"
-#include "viewporter-client.h"
+#include "wlr-screencopy-unstable-v1.h"
+#include "wlr-layer-shell-unstable-v1.h"
+#include "xdg-output-unstable-v1.h"
+#include "viewporter.h"
 
 #include "wayland.h"
 #include "common.h"

@@ -9,8 +9,8 @@ protocol_sources = []
 
 foreach protocol: protocols
     in_file = '@0@.xml'.format(protocol)
-    out_h = '@0@-client.h'.format(protocol)
-    out_c = '@0@-protocol.c'.format(protocol)
+    out_h = '@0@.h'.format(protocol)
+    out_c = '@0@.c'.format(protocol)
 
     header = custom_target(out_h,
         output: out_h,
