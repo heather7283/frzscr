@@ -78,11 +78,7 @@ struct screenshot *take_screenshot(struct output *output) {
 }
 
 void screenshot_cleanup(struct screenshot *screenshot) {
-    wl_buffer_destroy(screenshot->buffer.wl_buffer);
-    if (munmap(screenshot->buffer.data,
-               screenshot->buffer.stride * screenshot->buffer.height) < 0) {
-        EWARN("munmap() failed during cleanup");
-    }
+    destroy_buffer(&screenshot->buffer);
     wl_list_remove(&screenshot->link);
     free(screenshot);
 }

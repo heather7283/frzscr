@@ -1,11 +1,8 @@
 #include <stdio.h>
-#include <signal.h>
 #include <stdlib.h>
 #include <string.h>
-#include <getopt.h>
 #include <errno.h>
 #include <unistd.h>
-#include <stdbool.h>
 #include <limits.h>
 #include <sys/wait.h>
 #include <sys/epoll.h>

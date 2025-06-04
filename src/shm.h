@@ -9,5 +9,7 @@
 int create_buffer(struct buffer *buffer, enum wl_shm_format format,
                   uint32_t width, uint32_t height, uint32_t stride);
 
+void destroy_buffer(struct buffer *buffer);
+
 #endif /* #ifndef SHM_H */
 

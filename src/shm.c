@@ -1,6 +1,5 @@
 #define _GNU_SOURCE
 #include <stdlib.h>
-#include <stdint.h>
 #include <string.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -9,6 +8,7 @@
 #include <sys/mman.h>
 #include <wayland-client.h>
 
+#include "shm.h"
 #include "common.h"
 #include "wayland.h"
 
@@ -42,5 +42,12 @@ int create_buffer(struct buffer *buffer, enum wl_shm_format format,
     close(fd);
 
     return 0;
+}
+
+void destroy_buffer(struct buffer *buffer) {
+    wl_buffer_destroy(buffer->wl_buffer);
+    if (munmap(buffer->data, buffer->stride * buffer->height) < 0) {
+        EWARN("munmap() failed");
+    }
 }
 

@@ -1,3 +1,4 @@
+#include <stddef.h>
 #include <signal.h>
 
 #include "config.h"

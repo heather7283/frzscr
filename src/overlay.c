@@ -152,14 +152,7 @@ void overlay_cleanup(struct overlay *overlay) {
     if (overlay->wl_surface) {
         wl_surface_destroy(overlay->wl_surface);
     }
-    if (overlay->buffer.wl_buffer) {
-        wl_buffer_destroy(overlay->buffer.wl_buffer);
-    }
-    if (overlay->buffer.data != NULL) {
-        if (munmap(overlay->buffer.data, overlay->buffer.stride * overlay->buffer.height) < 0) {
-            EWARN("munmap() failed during cleanup");
-        }
-    }
+    destroy_buffer(&overlay->buffer);
     wl_list_remove(&overlay->link);
     free(overlay);
 }
