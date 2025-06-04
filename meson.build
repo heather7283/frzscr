@@ -1,7 +1,7 @@
 project(
     'frzscr', 'c',
     version: '0.1.0',
-    license: 'MIT',
+    license: 'GPL-3.0-or-later',
     default_options: ['warning_level=3']
 )
 
