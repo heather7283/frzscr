@@ -1,6 +1,6 @@
 .TH frzscr 1 "April 2024" "0.1.0" "User Commands"
 .SH NAME
-frzscr \- screen freezing program for wayland
+frzscr \- freeze screen
 
 .SH SYNOPSIS
 .B frzscr
@@ -8,37 +8,37 @@ frzscr \- screen freezing program for wayland
 [\fB\-o\fR \fIOUTPUT\fR]
 [\fB\-t\fR \fITIMEOUT\fR]
 [\fB\-s\fR \fISIGNUM\fR]
-[\fB\-c\fR \fICMD\fR [\fIARGS\fR...]]
+[\fB\-c\fR \fICMD\fR [\fIARG\fR]...]
 
 .SH DESCRIPTION
 .B frzscr
-creates an illusion of frozen screen by taking a screenshot and displaying it as an overlay. This is particularly useful for taking screenshots.
+creates an illusion of frozen screen by capturing your screen's contents and displaying it as an overlay. This is particularly useful for taking screenshots.
 
 .SH OPTIONS
 .TP
 \fB\-o\fR \fIOUTPUT\fR
-Only freeze the specified output (e.g. eDP-1).
+Only freeze the specified \fIOUTPUT\fR (e.g. eDP-1).
 .TP
 \fB\-t\fR \fITIMEOUT\fR
-Kill child (when used with \fB\-c\fR) and exit after specified number of seconds.
+Exit after TIMEOUT seconds. If \fB-c\fR options is used, \fBfrzscr\fR will also kill the child process by sending SIGTERM (or \fISIGNUM\fR if \fB-s\fR is used) to its process group.
 .TP
 \fB\-s\fR \fISIGNUM\fR
-Send signal number SIGNUM to child process instead of SIGTERM.
+Send signal number \fISIGNUM\fR to child process group instead of SIGTERM.
 .TP
-\fB\-c\fR \fICMD\fR [\fIARGS\fR...]
-Fork the specified command and wait for it to exit. All arguments after \fB\-c\fR are treated as arguments to the command.
+\fB\-c\fR \fICMD\fR [\fIARG\fR]...
+Fork the specified command and wait for it to exit. This terminates option list, and all arguments after \fB\-c\fR are treated as \fICMD\fR's argv (see \fBexecvp\fR(3)). The command is run in a new process group (see \fBsetpgid\fR(2)).
 .TP
 \fB\-C\fR
 Include cursor in the overlay.
 .TP
 \fB\-v\fR
-Increase verbosity (can be specified multiple times).
+Enable debug output.
 .TP
 \fB\-h\fR
 Print help message and exit.
 
 .SH EXAMPLES
-Freeze screen for 5 seconds:
+Freeze screen for 5 seconds and exit.
 .PP
 .RS
 .nf
@@ -46,7 +46,7 @@ frzscr \-t 5
 .fi
 .RE
 .PP
-Example for taking screenshots (double -c flag is not a typo):
+Example for taking screenshots. Note the double \fB-c\fR flag, which is not a typo. The first flag is interpreted by \fBfrzscr\fR itself, and the second is passed to \fBsh\fR(1).
 .PP
 .RS
 .nf
@@ -55,17 +55,17 @@ frzscr \-c sh \-c 'grim \-g "$(slurp)" \- | wl\-copy \-t "image/png"'
 .RE
 
 .SH NOTES
-Launching frzscr without arguments will freeze your screen until the process is killed and you might softlock yourself. It's recommended to use either \fB\-t\fR or \fB\-c\fR options.
-.PP
-When combining \fB\-t\fR and \fB\-c\fR options, frzscr will send SIGTERM to the child process group before exiting when timeout expires.
+Launching \fBfrzscr\fR without arguments will freeze your screen until the process is killed and you might softlock yourself. Use either \fB\-t\fR or \fB\-c\fR options.
+
+The wayland spec states: "Multiple surfaces can share a single layer, and ordering within a single layer is undefined." \fBfrzscr\fR assumes that newer surfaces are put on top of the older ones, and creates its own surfaces before forking the command specified with \fB-c\fR option, which allows programs like \fBslurp\fR(1) to work with \fBfrzscr\fR. This is compositor-dependant, but is known to work on hyprland, niri and sway.
 
 .SH BUGS
 Broken on hyprland for outputs that are both transformed and scaled. This appears to be a hyprland bug, see https://github.com/hyprwm/Hyprland/discussions/9964
 .PP
 Please report bugs to https://github.com/heather7283/frzscr/issues.
-.PP
-When reporting bugs:
 .PD 0
+.IP \(bu 4
+Provide output of \fBfrzscr\fR with \fB-v\fR option and WAYLAND_DEBUG=1 envvar set.
 .IP \(bu 4
 Provide backtrace with symbols if you experience a crash.
 .IP \(bu 4
@@ -73,6 +73,8 @@ Describe steps necessary to reproduce the issue.
 .PD
 
 .SH SEE ALSO
+Another project that does similar things: https://github.com/Jappie3/wayfreeze
+.PP
 .BR grim (1),
 .BR slurp (1),
 .BR hyprpicker (1)
