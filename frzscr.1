@@ -60,8 +60,6 @@ Launching \fBfrzscr\fR without arguments will freeze your screen until the proce
 The wayland spec states: "Multiple surfaces can share a single layer, and ordering within a single layer is undefined." \fBfrzscr\fR assumes that newer surfaces are put on top of the older ones, and creates its own surfaces before forking the command specified with \fB-c\fR option, which allows programs like \fBslurp\fR(1) to work with \fBfrzscr\fR. This is compositor-dependant, but is known to work on hyprland, niri and sway.
 
 .SH BUGS
-Broken on hyprland for outputs that are both transformed and scaled. This appears to be a hyprland bug, see https://github.com/hyprwm/Hyprland/discussions/9964
-.PP
 Please report bugs to https://github.com/heather7283/frzscr/issues.
 .PD 0
 .IP \(bu 4
