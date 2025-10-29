@@ -15,6 +15,9 @@ struct screenshot {
     enum wl_shm_format format;
     bool ready;
 
+    struct ext_image_copy_capture_session_v1 *session;
+    uint32_t session_width, session_height;
+
     struct wl_list link;
 };
 

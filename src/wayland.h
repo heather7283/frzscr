@@ -13,6 +13,8 @@ struct wayland {
     struct wl_shm *shm;
     struct zwlr_layer_shell_v1 *layer_shell;
     struct zwlr_screencopy_manager_v1 *screencopy_manager;
+    struct ext_image_copy_capture_manager_v1 *image_copy_capture_manager;
+    struct ext_output_image_capture_source_manager_v1 *output_image_capture_source_manager;
     struct zxdg_output_manager_v1 *xdg_output_manager;
     struct wp_viewporter *viewporter;
 
@@ -44,4 +46,3 @@ void wayland_init(void);
 void wayland_cleanup(void);
 
 #endif /* #ifndef WAYLAND_H */
-

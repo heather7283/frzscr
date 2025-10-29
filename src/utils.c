@@ -135,3 +135,21 @@ bool is_valid_signal(int sig) {
     return sigaddset(&set, sig) == 0;
 }
 
+// some bs
+uint32_t get_bytes_per_pixel(uint32_t format) {
+    switch (format) {
+        case WL_SHM_FORMAT_RGB888:
+        case WL_SHM_FORMAT_BGR888:
+            return 3;
+        case WL_SHM_FORMAT_RGB565:
+        case WL_SHM_FORMAT_BGR565:
+        case WL_SHM_FORMAT_ARGB4444:
+        case WL_SHM_FORMAT_XRGB4444:
+            return 2;
+        case WL_SHM_FORMAT_ARGB8888:
+        case WL_SHM_FORMAT_XRGB8888:
+        case WL_SHM_FORMAT_XBGR2101010:
+        default:
+            return 4;
+    }
+}

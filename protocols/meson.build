@@ -3,7 +3,10 @@ protocols = [
     'wlr-screencopy-unstable-v1',
     'xdg-shell',
     'xdg-output-unstable-v1',
-    'viewporter'
+    'viewporter',
+    'ext-image-capture-source-v1',
+    'ext-foreign-toplevel-list-v1',
+    'ext-image-copy-capture-v1'
 ]
 protocol_sources = []
 
