@@ -7,6 +7,8 @@
 #include "wlr-screencopy-unstable-v1.h"
 #include "wlr-layer-shell-unstable-v1.h"
 #include "xdg-output-unstable-v1.h"
+#include "ext-image-copy-capture-v1.h"
+#include "ext-image-capture-source-v1.h"
 #include "viewporter.h"
 
 #include "wayland.h"
@@ -103,6 +105,10 @@ static void registry_global(void *data, struct wl_registry *registry, uint32_t i
         wayland.xdg_output_manager = BIND_INTERFACE(zxdg_output_manager_v1_interface, 2);
     } else if (MATCH_INTERFACE(wp_viewporter_interface)) {
         wayland.viewporter = BIND_INTERFACE(wp_viewporter_interface, 1);
+    } else if (MATCH_INTERFACE(ext_image_copy_capture_manager_v1_interface)) {
+        wayland.image_copy_capture_manager = BIND_INTERFACE(ext_image_copy_capture_manager_v1_interface, 1);
+    } else if (MATCH_INTERFACE(ext_output_image_capture_source_manager_v1_interface)) {
+        wayland.output_image_capture_source_manager = BIND_INTERFACE(ext_output_image_capture_source_manager_v1_interface, 1);
     }
 
     #undef MATCH_INTERFACE
@@ -144,8 +150,11 @@ void wayland_init(void) {
     if (wayland.shm == NULL) {
         DIE("didn't get a wl_shm");
     }
-    if (wayland.screencopy_manager == NULL) {
-        DIE("didn't get zwlr_screencopy_manager_v1");
+    if (wayland.screencopy_manager == NULL && wayland.image_copy_capture_manager == NULL) {
+        DIE("didn't get zwlr_screencopy_manager_v1 or ext_image_copy_capture_manager_v1");
+    }
+    if (wayland.image_copy_capture_manager != NULL && wayland.output_image_capture_source_manager == NULL) {
+        DIE("got ext_image_copy_capture_manager_v1 but didn't get ext_output_image_capture_source_manager_v1");
     }
     if (wayland.layer_shell == NULL) {
         DIE("didn't get a zwlr_layer_shell_v1");
@@ -193,6 +202,12 @@ void wayland_cleanup(void) {
     if (wayland.screencopy_manager) {
         zwlr_screencopy_manager_v1_destroy(wayland.screencopy_manager);
     }
+    if (wayland.image_copy_capture_manager) {
+        ext_image_copy_capture_manager_v1_destroy(wayland.image_copy_capture_manager);
+    }
+    if (wayland.output_image_capture_source_manager) {
+        ext_output_image_capture_source_manager_v1_destroy(wayland.output_image_capture_source_manager);
+    }
     if (wayland.layer_shell) {
         zwlr_layer_shell_v1_destroy(wayland.layer_shell);
     }
@@ -210,4 +225,3 @@ void wayland_cleanup(void) {
         wl_display_disconnect(wayland.display);
     }
 }
-
