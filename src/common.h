@@ -27,5 +27,9 @@ extern int log_enable_debug;
 
 #define STREQ(a, b) (strcmp((a), (b)) == 0)
 
+#define _3(a, b) a##b
+#define _2(a, b) _3(a, b)
+#define _ _2(_dummy_param_, __COUNTER__)
+
 #endif /* #ifndef COMMON_H */
 

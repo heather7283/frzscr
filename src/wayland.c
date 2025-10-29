@@ -19,25 +19,25 @@ struct wayland wayland = {0};
 
 static void xdg_output_logical_position_handler(void *data, struct zxdg_output_v1 *xdg_output,
                                                 int32_t x, int32_t y) {
-	struct output *output = data;
+    struct output *output = data;
 
-	output->logical_geometry.x = x;
-	output->logical_geometry.y = y;
+    output->logical_geometry.x = x;
+    output->logical_geometry.y = y;
 }
 
 static void xdg_output_logical_size_handler(void *data, struct zxdg_output_v1 *xdg_output,
                                             int32_t width, int32_t height) {
-	struct output *output = data;
+    struct output *output = data;
 
-	output->logical_geometry.w = width;
-	output->logical_geometry.h = height;
+    output->logical_geometry.w = width;
+    output->logical_geometry.h = height;
 }
 
 static void xdg_output_name_handler(void *data, struct zxdg_output_v1 *xdg_output,
                                     const char *name) {
-	struct output *output = data;
+    struct output *output = data;
 
-	output->name = xstrdup(name);
+    output->name = xstrdup(name);
 }
 
 static void xdg_output_description_handler(void *data, struct zxdg_output_v1 *xdg_output,
@@ -46,15 +46,15 @@ static void xdg_output_description_handler(void *data, struct zxdg_output_v1 *xd
 }
 
 static void xdg_output_done_handler(void *data, struct zxdg_output_v1 *xdg_output) {
-	// no-op
+    // no-op
 }
 
 static const struct zxdg_output_v1_listener xdg_output_listener = {
-	.logical_position = xdg_output_logical_position_handler,
-	.logical_size = xdg_output_logical_size_handler,
-	.name = xdg_output_name_handler,
-	.description = xdg_output_description_handler,
-	.done = xdg_output_done_handler,
+    .logical_position = xdg_output_logical_position_handler,
+    .logical_size = xdg_output_logical_size_handler,
+    .name = xdg_output_name_handler,
+    .description = xdg_output_description_handler,
+    .done = xdg_output_done_handler,
 };
 
 static void output_geometry_handler(void *data, struct wl_output *wl_output,
@@ -83,7 +83,7 @@ static const struct wl_output_listener output_listener = {
 };
 
 static void registry_global(void *data, struct wl_registry *registry, uint32_t id,
-	                        const char *interface, uint32_t version) {
+                            const char *interface, uint32_t version) {
     #define MATCH_INTERFACE(i) STREQ(interface, i.name)
     #define BIND_INTERFACE(i, ver) (wl_registry_bind(registry, id, &i, ver))
 

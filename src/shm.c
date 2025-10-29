@@ -20,9 +20,8 @@ int create_buffer(struct buffer *buffer, enum wl_shm_format format,
 
     size_t size = stride * height;
 
-    /* non-portable my ass. musl implements it and no one uses wayland on bsd */
-	int fd = memfd_create("frzscr-wayland-shm", MFD_CLOEXEC);
-	if (fd < 0) {
+    int fd = memfd_create("frzscr-wayland-shm", MFD_CLOEXEC);
+    if (fd < 0) {
         EDIE("failed to crate memfd");
     }
 

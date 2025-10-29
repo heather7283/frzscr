@@ -57,40 +57,37 @@ static const struct zwlr_screencopy_frame_v1_listener screencopy_frame_listener 
 };
 
 static void copy_capture_transform_handler(void *data,
-			                               struct ext_image_copy_capture_frame_v1 *ext_image_copy_capture_frame_v1,
-										   uint32_t transform) {
-	// noop
+                                           struct ext_image_copy_capture_frame_v1 *_,
+                                           uint32_t transform) {
+    // noop
 }
 
 static void copy_capture_damage_handler(void *data,
-		       struct ext_image_copy_capture_frame_v1 *ext_image_copy_capture_frame_v1,
-		       int32_t x,
-		       int32_t y,
-		       int32_t width,
-		       int32_t height) {
-	struct screenshot *sshot = data;
-	// noop
+                                        struct ext_image_copy_capture_frame_v1 *_,
+                                        int32_t x, int32_t y,
+                                        int32_t width, int32_t height) {
+    // noop
 }
 
 static void copy_capture_presentation_time_handler(void *data,
-				  struct ext_image_copy_capture_frame_v1 *ext_image_copy_capture_frame_v1,
-				  uint32_t tv_sec_hi,
-				  uint32_t tv_sec_lo,
-				  uint32_t tv_nsec) {
-	// noop
+                                                   struct ext_image_copy_capture_frame_v1 *_,
+                                                   uint32_t tv_sec_hi,
+                                                   uint32_t tv_sec_lo,
+                                                   uint32_t tv_nsec) {
+    // noop
 }
 
 static void copy_capture_frame_ready_handler(void *data,
-		                                     struct ext_image_copy_capture_frame_v1 *frame) {
-	struct screenshot *sshot = data;
+                                             struct ext_image_copy_capture_frame_v1 *frame) {
+    struct screenshot *sshot = data;
 
-	sshot->ready = true;
-	ext_image_copy_capture_frame_v1_destroy(frame);
+    sshot->ready = true;
+    ext_image_copy_capture_frame_v1_destroy(frame);
 }
 
 static void copy_capture_failed_handler(void *data,
-                                       struct ext_image_copy_capture_frame_v1 *ext_image_copy_capture_frame_v1,
-                                       uint32_t reason) {
+                                        struct ext_image_copy_capture_frame_v1 *_,
+                                        uint32_t reason) {
     struct screenshot *sshot = data;
 
     char *reason_str;
@@ -118,7 +115,7 @@ static const struct ext_image_copy_capture_frame_v1_listener image_copy_frame_li
 };
 
 static void session_buffer_size_handler(void *data,
-                                        struct ext_image_copy_capture_session_v1 *session,
+                                        struct ext_image_copy_capture_session_v1 *_,
                                         uint32_t width,
                                         uint32_t height) {
     struct screenshot *sshot = data;
@@ -128,7 +125,7 @@ static void session_buffer_size_handler(void *data,
 }
 
 static void session_shm_format_handler(void *data,
-                                       struct ext_image_copy_capture_session_v1 *session,
+                                       struct ext_image_copy_capture_session_v1 *_,
                                        uint32_t format) {
     struct screenshot *sshot = data;
     DEBUG("session_shm_format: 0x%" PRIx32, format);
@@ -136,15 +133,15 @@ static void session_shm_format_handler(void *data,
 }
 
 static void session_dmabuf_device_handler(void *data,
-                                          struct ext_image_copy_capture_session_v1 *session,
+                                          struct ext_image_copy_capture_session_v1 *_,
                                           struct wl_array *device) {
     // noop
 }
 
 static void session_dmabuf_format_handler(void *data,
-                                         struct ext_image_copy_capture_session_v1 *session,
-                                         uint32_t format,
-                                         struct wl_array *modifiers) {
+                                          struct ext_image_copy_capture_session_v1 *_,
+                                          uint32_t format,
+                                          struct wl_array *modifiers) {
     // noop
 }
 
@@ -184,21 +181,24 @@ struct screenshot *take_screenshot(struct output *output) {
     if (wayland.screencopy_manager) {
         struct zwlr_screencopy_frame_v1 *frame =
             zwlr_screencopy_manager_v1_capture_output(wayland.screencopy_manager,
-                                                    config.cursor,
-                                                    screenshot->output->wl_output);
+                                                      config.cursor,
+                                                      screenshot->output->wl_output);
         zwlr_screencopy_frame_v1_add_listener(frame, &screencopy_frame_listener, screenshot);
     } else {
         struct ext_image_capture_source_v1 *source =
             ext_output_image_capture_source_manager_v1_create_source(
                 wayland.output_image_capture_source_manager,
-                screenshot->output->wl_output);
+                screenshot->output->wl_output
+            );
 
-        uint32_t options = config.cursor ? EXT_IMAGE_COPY_CAPTURE_MANAGER_V1_OPTIONS_PAINT_CURSORS : 0;
+        uint32_t options = 0;
+        if (config.cursor) {
+            options |= EXT_IMAGE_COPY_CAPTURE_MANAGER_V1_OPTIONS_PAINT_CURSORS;
+        };
+
         screenshot->session =
-            ext_image_copy_capture_manager_v1_create_session(
-                wayland.image_copy_capture_manager,
-                source,
-                options);
+            ext_image_copy_capture_manager_v1_create_session(wayland.image_copy_capture_manager,
+                                                             source, options);
         ext_image_copy_capture_session_v1_add_listener(screenshot->session,
                                                        &session_listener,
                                                        screenshot);
@@ -226,3 +226,4 @@ void screenshot_cleanup(struct screenshot *screenshot) {
     wl_list_remove(&screenshot->link);
     free(screenshot);
 }
+
